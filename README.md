@@ -16,6 +16,8 @@ Code and models for the best vision-only method, [FCOS3D](https://arxiv.org/abs/
 
 Documentation: https://mmdetection3d.readthedocs.io/
 
+学习文档：https://www.yuque.com/huangzhongqing/hre6tf/nnioxg
+
 ## Introduction
 
 English | [简体中文](README_zh-CN.md)
