@@ -1,7 +1,16 @@
+'''
+Description: 
+Author: HCQ
+Company(School): UCAS
+Email: 1756260160@qq.com
+Date: 2021-09-12 11:16:43
+LastEditTime: 2021-09-13 11:14:38
+FilePath: /mmdetection3d/configs/_base_/models/hv_pointpillars_secfpn_kitti.py
+'''
 voxel_size = [0.16, 0.16, 4]
 
 model = dict(
-    type='VoxelNet',
+    type='VoxelNet', # 模型名字
     voxel_layer=dict(
         max_num_points=32,  # max_points_per_voxel
         point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1],
@@ -17,12 +26,13 @@ model = dict(
         point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1]),
     middle_encoder=dict(
         type='PointPillarsScatter', in_channels=64, output_shape=[496, 432]),
-    backbone=dict(
-        type='SECOND',
-        in_channels=64,
+    backbone=dict( # 调用注册器的backbone
+        type='SECOND', # backbone名字 
+        # conv_cfg=dict(type='DCN', bias=False) # 
+        in_channels=64, #
         layer_nums=[3, 5, 5],
         layer_strides=[2, 2, 2],
-        out_channels=[64, 128, 256]),
+        out_channels=[64, 128, 256]), # 
     neck=dict(
         type='SECONDFPN',
         in_channels=[64, 128, 256],

@@ -165,7 +165,7 @@ class DCNSeparateHead(BaseModule):
             heads.pop('heatmap')
         # feature adaptation with dcn
         # use separate features for classification / regression
-        self.feature_adapt_cls = build_conv_layer(dcn_config)
+        self.feature_adapt_cls = build_conv_layer(dcn_config) # dcn_config参数位置： configs/centerpoint/centerpoint_01voxel_second_secfpn_dcn_4x8_cyclic_20e_nus.py
 
         self.feature_adapt_reg = build_conv_layer(dcn_config)
 

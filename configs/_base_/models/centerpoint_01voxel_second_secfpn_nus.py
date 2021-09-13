@@ -1,3 +1,12 @@
+'''
+Description: 
+Author: HCQ
+Company(School): UCAS
+Email: 1756260160@qq.com
+Date: 2021-09-12 11:16:43
+LastEditTime: 2021-09-13 11:45:38
+FilePath: /mmdetection3d/configs/_base_/models/centerpoint_01voxel_second_secfpn_nus.py
+'''
 voxel_size = [0.1, 0.1, 0.2]
 model = dict(
     type='CenterPoint',
@@ -23,7 +32,7 @@ model = dict(
         norm_cfg=dict(type='BN', eps=1e-3, momentum=0.01),
         conv_cfg=dict(type='Conv2d', bias=False)),
     pts_neck=dict(
-        type='SECONDFPN',
+        type='SECONDFPN',  # 对应 class SECONDDFPN(BaseModule)(mmdetection3d/mmdet3d/models/necks/second_fpn.py)
         in_channels=[128, 256],
         out_channels=[256, 256],
         upsample_strides=[1, 2],
@@ -31,7 +40,7 @@ model = dict(
         upsample_cfg=dict(type='deconv', bias=False),
         use_conv_for_no_stride=True),
     pts_bbox_head=dict(
-        type='CenterHead',
+        type='CenterHead',  # 对应 class CenterHead(mmdet3d/models/dense_heads/centerpoint_head.py)
         in_channels=sum([256, 256]),
         tasks=[
             dict(num_class=1, class_names=['car']),

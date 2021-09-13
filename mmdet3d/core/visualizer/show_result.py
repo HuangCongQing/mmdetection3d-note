@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 import numpy as np
-import trimesh
+import trimesh # 可视化 https://blog.csdn.net/qq_39128364/article/details/109487213
 from os import path as osp
 
 from .image_vis import (draw_camera_bbox3d_on_img, draw_depth_bbox3d_on_img,

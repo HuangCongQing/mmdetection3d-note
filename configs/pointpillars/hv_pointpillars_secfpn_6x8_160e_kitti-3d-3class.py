@@ -1,9 +1,19 @@
+'''
+Description: 
+Author: HCQ
+Company(School): UCAS
+Email: 1756260160@qq.com
+Date: 2021-09-12 11:16:43
+LastEditTime: 2021-09-13 11:37:47
+FilePath: /mmdetection3d/configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py
+'''
 _base_ = [
     '../_base_/models/hv_pointpillars_secfpn_kitti.py',
     '../_base_/datasets/kitti-3d-3class.py',
     '../_base_/schedules/cyclic_40e.py', '../_base_/default_runtime.py'
 ]
 
+# 1 数据集 (dataset)  data = dict()================================================================================
 point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]
 # dataset settings
 data_root = 'data/kitti/'
@@ -70,6 +80,7 @@ data = dict(
     val=dict(pipeline=test_pipeline, classes=class_names),
     test=dict(pipeline=test_pipeline, classes=class_names))
 
+# 2 训练策略 (schedule) ======================================================================
 # In practice PointPillars also uses a different schedule
 # optimizer
 lr = 0.001

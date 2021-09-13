@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from mmcv.cnn import build_conv_layer, build_norm_layer
+from mmcv.cnn import build_conv_layer, build_norm_layer # 
 from mmcv.runner import BaseModule
 from torch import nn as nn
 
 from mmdet.models import BACKBONES
 
-
+# 把下面second类注册成backbones
 @BACKBONES.register_module()
 class SECOND(BaseModule):
     """Backbone network for SECOND/PointPillars/PartA2/MVXNet.
@@ -26,7 +26,7 @@ class SECOND(BaseModule):
                  layer_nums=[3, 5, 5],
                  layer_strides=[2, 2, 2],
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.01),
-                 conv_cfg=dict(type='Conv2d', bias=False),
+                 conv_cfg=dict(type='Conv2d', bias=False),  # 对应backbone Conv2d  默认？？  configs/_base_/models/hv_pointpillars_secfpn_kitti.py
                  init_cfg=None,
                  pretrained=None):
         super(SECOND, self).__init__(init_cfg=init_cfg)
@@ -60,10 +60,10 @@ class SECOND(BaseModule):
                 block.append(build_norm_layer(norm_cfg, out_channels[i])[1])
                 block.append(nn.ReLU(inplace=True))
 
-            block = nn.Sequential(*block)
+            block = nn.Sequential(*block) # 
             blocks.append(block)
 
-        self.blocks = nn.ModuleList(blocks)
+        self.blocks = nn.ModuleList(blocks) # 存放在
 
         assert not (init_cfg and pretrained), \
             'init_cfg and pretrained cannot be setting at the same time'
