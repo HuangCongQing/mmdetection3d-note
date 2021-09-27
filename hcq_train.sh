@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=2,3,4,5,6,7 ./tools/dist_train.sh  configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py 6

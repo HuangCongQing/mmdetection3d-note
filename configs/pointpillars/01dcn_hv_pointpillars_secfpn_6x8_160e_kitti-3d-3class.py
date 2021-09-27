@@ -80,7 +80,21 @@ data = dict(
     val=dict(pipeline=test_pipeline, classes=class_names),
     test=dict(pipeline=test_pipeline, classes=class_names))
 
-# 2 训练策略 (schedule) ======================================================================
+#  模型 (nodel) 个人添加======================================================================
+
+
+model = dict(
+    backbone=dict(
+        type='DCSECOND',  # 代替原来的SECOND
+        in_channels=64,
+        layer_nums=[3, 5, 5],
+        layer_strides=[2, 2, 2],
+        out_channels=[64, 128, 256],
+        dcn_config=dict(type='DCN'), # 可加可不加，初始就是DCN
+    ),
+)
+
+#  训练策略 (schedule) ======================================================================
 # In practice PointPillars also uses a different schedule
 # optimizer
 lr = 0.001

@@ -6,8 +6,9 @@ from .pointnet2_sa_msg import PointNet2SAMSG
 from .pointnet2_sa_ssg import PointNet2SASSG
 from .second import SECOND
 # 添加写的新模型
+from .dc_second import DCSECOND
 
 __all__ = [
     'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'NoStemRegNet',
-    'SECOND', 'PointNet2SASSG', 'PointNet2SAMSG', 'MultiBackbone'
+    'SECOND', 'PointNet2SASSG', 'PointNet2SAMSG', 'MultiBackbone', 'DCSECOND'
 ]

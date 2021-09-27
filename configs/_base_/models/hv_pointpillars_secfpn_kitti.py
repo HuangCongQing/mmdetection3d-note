@@ -10,7 +10,7 @@ FilePath: /mmdetection3d/configs/_base_/models/hv_pointpillars_secfpn_kitti.py
 voxel_size = [0.16, 0.16, 4]
 
 model = dict(
-    type='VoxelNet', # 模型名字
+    type='VoxelNet', # 模型名字  mmdet3d/models/detectors/__init__.py  mmdet3d/models/detectors/voxelnet.py
     voxel_layer=dict(
         max_num_points=32,  # max_points_per_voxel
         point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1],
@@ -18,7 +18,7 @@ model = dict(
         max_voxels=(16000, 40000)  # (training, testing) max_voxels
     ),
     voxel_encoder=dict(
-        type='PillarFeatureNet',
+        type='PillarFeatureNet',  # init--> from .pillar_encoder import PillarFeatureNet --> mmdet3d/models/voxel_encoders/pillar_encoder.py
         in_channels=4,
         feat_channels=[64],
         with_distance=False,
