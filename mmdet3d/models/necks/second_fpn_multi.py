@@ -9,7 +9,7 @@ from mmdet.models import NECKS
 
 
 @NECKS.register_module()
-class SECONDFPN(BaseModule):
+class SECONDFPNMULTI(BaseModule):
     """FPN used in SECOND/PointPillars/PartA2/MVXNet.
 
     Args:
@@ -34,7 +34,7 @@ class SECONDFPN(BaseModule):
                  init_cfg=None):
         # if for GroupNorm,
         # cfg is dict(type='GN', num_groups=num_groups, eps=1e-3, affine=True)
-        super(SECONDFPN, self).__init__(init_cfg=init_cfg)
+        super(SECONDFPNMULTI, self).__init__(init_cfg=init_cfg)
         assert len(out_channels) == len(upsample_strides) == len(in_channels)
         self.in_channels = in_channels
         self.out_channels = out_channels

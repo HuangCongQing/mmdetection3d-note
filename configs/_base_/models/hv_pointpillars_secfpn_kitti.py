@@ -7,32 +7,33 @@ Date: 2021-09-12 11:16:43
 LastEditTime: 2021-09-13 11:14:38
 FilePath: /mmdetection3d/configs/_base_/models/hv_pointpillars_secfpn_kitti.py
 '''
-voxel_size = [0.16, 0.16, 4]
+voxel_size = [0.16, 0.16, 4] # 长宽高
 
 model = dict(
-    type='VoxelNet', # 模型名字  mmdet3d/models/detectors/__init__.py  mmdet3d/models/detectors/voxelnet.py
+    type='VoxelNet', # voxelnet.py模型名字  mmdet3d/models/detectors/__init__.py  mmdet3d/models/detectors/voxelnet.py
     voxel_layer=dict(
         max_num_points=32,  # max_points_per_voxel
         point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1],
         voxel_size=voxel_size,
         max_voxels=(16000, 40000)  # (training, testing) max_voxels
     ),
+    # 'pillar_features'torch.Size([17842, 64])  # pillar特征（C, P）的Tensor，特征维度C=64，Pillar非空P=17842个
     voxel_encoder=dict(
         type='PillarFeatureNet',  # init--> from .pillar_encoder import PillarFeatureNet --> mmdet3d/models/voxel_encoders/pillar_encoder.py
         in_channels=4,
-        feat_channels=[64],
+        feat_channels=[64],   # pillar特征（C, P）的Tensor，特征维度C=64，Pillar非空P=17842个
         with_distance=False,
         voxel_size=voxel_size,
         point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1]),
     middle_encoder=dict(
-        type='PointPillarsScatter', in_channels=64, output_shape=[496, 432]),
+        type='PointPillarsScatter', in_channels=64, output_shape=[496, 432]), # 生成伪造图像，图像维度为(1,64,496,432)  mmdet3d/models/middle_encoders/pillar_scatter.py
     backbone=dict( # 调用注册器的backbone
         type='SECOND', # backbone名字 
         # conv_cfg=dict(type='DCN', bias=False) # 
         in_channels=64, #
         layer_nums=[3, 5, 5],
         layer_strides=[2, 2, 2],
-        out_channels=[64, 128, 256]), # 
+        out_channels=[64, 128, 256]), # [64, 128, 256]
     neck=dict(
         type='SECONDFPN',
         in_channels=[64, 128, 256],
@@ -44,7 +45,7 @@ model = dict(
         in_channels=384,
         feat_channels=384,
         use_direction_classifier=True,
-        anchor_generator=dict(
+        anchor_generator=dict( # 生成anchor
             type='Anchor3DRangeGenerator',
             ranges=[
                 [0, -39.68, -0.6, 70.4, 39.68, -0.6],
@@ -56,6 +57,7 @@ model = dict(
             reshape_out=False),
         diff_rad_by_sin=True,
         bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'),
+        # 分类loss，回归loss，朝向loss
         loss_cls=dict(
             type='FocalLoss',
             use_sigmoid=True,

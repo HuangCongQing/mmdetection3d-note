@@ -85,13 +85,20 @@ data = dict(
 
 model = dict(
     backbone=dict(
+        # _delete_=True,  # 忽略基础配置文件里的部分内容
         type='DCSECOND',  # 代替原来的SECOND
         in_channels=64,
         layer_nums=[3, 5, 5],
         layer_strides=[2, 2, 2],
-        out_channels=[64, 128, 256],
-        dcn_config=dict(type='DCN'), # 可加可不加，初始就是DCN
+        # out_channels=[128, 128, 256], # [128, 128, 256] 覆盖的是_base_ 的 configs/_base_/models/hv_pointpillars_secfpn_kitti.py [64, 128, 256]
+        # dcn_config=dict(type='DCN'), # 可加可不加，初始就是DCN
+        # stage_with_dcn=(False, False, True, True), #报错  DCSECOND: __init__() got an unexpected keyword argument 'stage_with_dcn'
     ),
+    neck=dict(
+        type='SECONDFPNMULTI', # 优化
+        in_channels=[64, 128, 256],
+        upsample_strides=[1, 2, 4],
+        out_channels=[128, 128, 128]),
 )
 
 #  训练策略 (schedule) ======================================================================

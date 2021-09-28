@@ -142,7 +142,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
         """Forward function on a single-scale feature map.
 
         Args:
-            x (torch.Tensor): Input features.
+            x (torch.Tensor): Input features.  输入：（6, 384(64*6),248,216） Tensor: (6, 6C, W/2,H/2)
 
         Returns:
             tuple[torch.Tensor]: Contain score of each class, bbox \
@@ -166,7 +166,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             tuple[list[torch.Tensor]]: Multi-level class score, bbox \
                 and direction predictions.
         """
-        return multi_apply(self.forward_single, feats)
+        return multi_apply(self.forward_single, feats) # multi_apply函数
 
     def get_anchors(self, featmap_sizes, input_metas, device='cuda'):
         """Get anchors according to feature map sizes.

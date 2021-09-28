@@ -30,13 +30,13 @@ class SECOND(BaseModule):
                  init_cfg=None,
                  pretrained=None):
         super(SECOND, self).__init__(init_cfg=init_cfg)
-        assert len(layer_strides) == len(layer_nums)
-        assert len(out_channels) == len(layer_nums)
+        assert len(layer_strides) == len(layer_nums) # 3 
+        assert len(out_channels) == len(layer_nums) # 3 
 
         in_filters = [in_channels, *out_channels[:-1]]
         # note that when stride > 1, conv2d with same padding isn't
         # equal to pad-conv2d. we should use pad-conv2d.
-        blocks = []
+        blocks = [] # append的block
         for i, layer_num in enumerate(layer_nums):
             block = [
                 build_conv_layer(
@@ -87,4 +87,4 @@ class SECOND(BaseModule):
         for i in range(len(self.blocks)):
             x = self.blocks[i](x)
             outs.append(x)
-        return tuple(outs)
+        return tuple(outs)  # 输出元组类型

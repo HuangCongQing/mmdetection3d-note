@@ -7,7 +7,7 @@ from mmdet3d.core.bbox import bbox3d2result, bbox3d2roi
 from mmdet.core import build_assigner, build_sampler
 from mmdet.models import HEADS
 from ..builder import build_head, build_roi_extractor
-from .base_3droi_head import Base3DRoIHead
+from .base_3droi_head import Base3DRoIHead # 继承 我们从 Base3DRoIHead 中继承得到一个新类 PartAggregationROIHead
 
 
 @HEADS.register_module()

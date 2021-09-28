@@ -36,16 +36,16 @@ class VoxelNet(SingleStage3DDetector):
         self.voxel_layer = Voxelization(**voxel_layer)
         self.voxel_encoder = builder.build_voxel_encoder(voxel_encoder)
         self.middle_encoder = builder.build_middle_encoder(middle_encoder)
-
+    # 提取特征
     def extract_feat(self, points, img_metas=None):
         """Extract features from points."""
         voxels, num_points, coors = self.voxelize(points)
-        voxel_features = self.voxel_encoder(voxels, num_points, coors)
+        voxel_features = self.voxel_encoder(voxels, num_points, coors) # step1
         batch_size = coors[-1, 0].item() + 1
-        x = self.middle_encoder(voxel_features, coors, batch_size)
-        x = self.backbone(x)
+        x = self.middle_encoder(voxel_features, coors, batch_size) # step2 中间encoder  
+        x = self.backbone(x) # backbone   step3
         if self.with_neck:
-            x = self.neck(x)
+            x = self.neck(x) # neck pointpillars  # step4
         return x
 
     @torch.no_grad()
