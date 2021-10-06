@@ -275,11 +275,11 @@ class DynamicPillarFeatureNet(PillarFeatureNet):
             torch.Tensor: Features of pillars.
         """
         # 3 优化：xy两维的平方根=====================================
-        xy_sqrt = torch.sqrt( features[:, 0]**2 +  features[:,1]**2) # 两维的平方根
+        xy_sqrt = torch.sqrt( features[:, :, 0]**2 +  features[:, :, 1]**2) # 两维的平方根
         features[:, :, 1] = xy_sqrt # 代替y这一维
         features = features[:, :, 1:] # 从1维开始
         # 优化结束
-        
+
         features_ls = [features]
         # Find distance of x, y, and z from cluster center
         if self._with_cluster_center:
