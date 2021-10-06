@@ -38,8 +38,8 @@ class PillarFeatureNet(nn.Module):
     """
 
     def __init__(self,
-                 in_channels=4,
-                 feat_channels=(64, ),
+                 in_channels=4,  #  x, y, z, r. Defaults to 4.
+                 feat_channels=(64, ),  # （C, P）的Tensor，特征维度C=64，非空Pillar有P个。
                  with_distance=False,
                  with_cluster_center=True,
                  with_voxel_center=True,
@@ -87,6 +87,7 @@ class PillarFeatureNet(nn.Module):
         self.x_offset = self.vx / 2 + point_cloud_range[0]
         self.y_offset = self.vy / 2 + point_cloud_range[1]
         self.point_cloud_range = point_cloud_range
+        #  __init__结束
 
     @force_fp32(out_fp16=True)
     def forward(self, features, num_points, coors):
@@ -95,7 +96,7 @@ class PillarFeatureNet(nn.Module):
         Args:
             features (torch.Tensor): Point features or raw points in shape
                 (N, M, C).
-            num_points (torch.Tensor): Number of points in each pillar.
+            num_points (torch.Tensor): Number of points in each pillar.每个pillars的点的数量
             coors (torch.Tensor): Coordinates of each voxel.
 
         Returns:
@@ -104,7 +105,7 @@ class PillarFeatureNet(nn.Module):
         features_ls = [features]
         # Find distance of x, y, and z from cluster center
         if self._with_cluster_center:
-            points_mean = features[:, :, :3].sum(
+            points_mean = features[:, :, :3].sum( # xyz
                 dim=1, keepdim=True) / num_points.type_as(features).view(
                     -1, 1, 1)
             f_cluster = features[:, :, :3] - points_mean
