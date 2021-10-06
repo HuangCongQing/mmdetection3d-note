@@ -102,16 +102,16 @@ class PillarFeatureNet(nn.Module):
         Returns:
             torch.Tensor: Features of pillars.
         """
-        features_ls = [features]
-        # Find distance of x, y, and z from cluster center
+        features_ls = [features] # 
+        # Find distance of x, y, and z from cluster center  Pillar内点云算术中心的偏移量
         if self._with_cluster_center:
             points_mean = features[:, :, :3].sum( # xyz
                 dim=1, keepdim=True) / num_points.type_as(features).view(
                     -1, 1, 1)
-            f_cluster = features[:, :, :3] - points_mean
+            f_cluster = features[:, :, :3] - points_mean # 
             features_ls.append(f_cluster)
 
-        # Find distance of x, y, and z from pillar center
+        # Find distance of x, y, and z from pillar center  点相对于Pillar网格中心(x,y中心坐标)的偏移量。
         dtype = features.dtype
         if self._with_voxel_center:
             if not self.legacy:
@@ -130,11 +130,11 @@ class PillarFeatureNet(nn.Module):
                 f_center[:, :, 1] = f_center[:, :, 1] - (
                     coors[:, 2].type_as(features).unsqueeze(1) * self.vy +
                     self.y_offset)
-            features_ls.append(f_center)
+            features_ls.append(f_center) # 保存
 
         if self._with_distance:
-            points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True)
-            features_ls.append(points_dist)
+            points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True) # inputs1 = torch.norm(inputs, p=2, dim=2, keepdim=True)
+            features_ls.append(points_dist) # 
 
         # Combine together feature decorations
         features = torch.cat(features_ls, dim=-1)
@@ -149,7 +149,7 @@ class PillarFeatureNet(nn.Module):
         for pfn in self.pfn_layers:
             features = pfn(features, num_points)
 
-        return features.squeeze()
+        return features.squeeze() # 去除维数为1的的维度 包含pillar_features，（C, P）的Tensor，特征维度C=64，非空Pillar有P个。
 
 
 @VOXEL_ENCODERS.register_module()
@@ -215,6 +215,7 @@ class DynamicPillarFeatureNet(PillarFeatureNet):
                 nn.Sequential(
                     nn.Linear(in_filters, out_filters, bias=False), norm_layer,
                     nn.ReLU(inplace=True)))
+        # for循环结束
         self.num_pfn = len(pfn_layers)
         self.pfn_layers = nn.ModuleList(pfn_layers)
         self.pfn_scatter = DynamicScatter(voxel_size, point_cloud_range,
@@ -273,11 +274,17 @@ class DynamicPillarFeatureNet(PillarFeatureNet):
         Returns:
             torch.Tensor: Features of pillars.
         """
+        # 3 优化：xy两维的平方根=====================================
+        xy_sqrt = torch.sqrt( features[:, 0]**2 +  features[:,1]**2) # 两维的平方根
+        features[:, :, 1] = xy_sqrt # 代替y这一维
+        features = features[:, :, 1:] # 从1维开始
+        # 优化结束
+        
         features_ls = [features]
         # Find distance of x, y, and z from cluster center
         if self._with_cluster_center:
             voxel_mean, mean_coors = self.cluster_scatter(features, coors)
-            points_mean = self.map_voxel_center_to_point(
+            points_mean = self.map_voxel_center_to_point( #     (M, C), where M is the number of points.
                 coors, voxel_mean, mean_coors)
             # TODO: maybe also do cluster for reflectivity
             f_cluster = features[:, :3] - points_mean[:, :3]
@@ -290,7 +297,7 @@ class DynamicPillarFeatureNet(PillarFeatureNet):
                 coors[:, 3].type_as(features) * self.vx + self.x_offset)
             f_center[:, 1] = features[:, 1] - (
                 coors[:, 2].type_as(features) * self.vy + self.y_offset)
-            features_ls.append(f_center)
+            features_ls.append(f_center) # 该点云所处Pillar中所有点的几何中心
 
         if self._with_distance:
             points_dist = torch.norm(features[:, :3], 2, 1, keepdim=True)
