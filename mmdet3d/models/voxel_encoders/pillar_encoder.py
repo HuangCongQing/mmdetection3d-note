@@ -38,7 +38,7 @@ class PillarFeatureNet(nn.Module):
     """
 
     def __init__(self,
-                 in_channels=4,  #  x, y, z, r. Defaults to 4.
+                 in_channels=3,  #  x, y, z, r. Defaults to 4. 优化后x, y变成1维
                  feat_channels=(64, ),  # （C, P）的Tensor，特征维度C=64，非空Pillar有P个。
                  with_distance=False,
                  with_cluster_center=True,
@@ -55,15 +55,15 @@ class PillarFeatureNet(nn.Module):
             in_channels += 3
         if with_voxel_center:
             in_channels += 2
-        if with_distance:
+        if with_distance: # False
             in_channels += 1
         self._with_distance = with_distance
         self._with_cluster_center = with_cluster_center
         self._with_voxel_center = with_voxel_center
         self.fp16_enabled = False
         # Create PillarFeatureNet layers
-        self.in_channels = in_channels
-        feat_channels = [in_channels] + list(feat_channels)
+        self.in_channels = in_channels #   in_channels=4+3+2 = 9,===================================
+        feat_channels = [in_channels] + list(feat_channels) # 
         pfn_layers = []
         for i in range(len(feat_channels) - 1):
             in_filters = feat_channels[i]
@@ -95,20 +95,20 @@ class PillarFeatureNet(nn.Module):
 
         Args:
             features (torch.Tensor): Point features or raw points in shape
-                (N, M, C).
-            num_points (torch.Tensor): Number of points in each pillar.每个pillars的点的数量
-            coors (torch.Tensor): Coordinates of each voxel.
+                (N, M, C).   Tensor(35245, 32, 4)
+            num_points (torch.Tensor): Number of points in each pillar.每个pillars的点的数量 Tensor(35245, )
+            coors (torch.Tensor): Coordinates of each voxel.  Tensor(35245,  4)
 
         Returns:
             torch.Tensor: Features of pillars.
         """
         # 3 优化：xy两维的平方根=====================================
-        xy_sqrt = torch.sqrt( features[:, :, 0]**2 +  features[:, :, 1]**2) # 两维的平方根
-        features[:, :, 1] = xy_sqrt # 代替y这一维
-        features = features[:, :, 1:] # 从1维开始
+        # xy_sqrt = torch.sqrt( features[:, :, 0]**2 +  features[:, :, 1]**2) # 两维的平方根  torch.Size([35245, 32])
+        # features[:, :, 1] = xy_sqrt # 代替y这一维
+        # features = features[:, :, 1:] # 从1维开始   Tensor(35245, 32, 3)
         # 优化结束
         
-        features_ls = [features] # 
+        features_ls = [features] # Tensor(35245, 32, 4)
         # Find distance of x, y, and z from cluster center  Pillar内点云算术中心的偏移量
         if self._with_cluster_center:
             points_mean = features[:, :, :3].sum( # xyz

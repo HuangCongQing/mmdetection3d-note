@@ -94,6 +94,7 @@ model = dict(
         # dcn_config=dict(type='DCN'), # 可加可不加，初始就是DCN
         # stage_with_dcn=(False, False, True, True), #报错  DCSECOND: __init__() got an unexpected keyword argument 'stage_with_dcn'
     ),
+    
     # 优化2：多检测融合（无效果）
     # neck=dict(
     #     type='SECONDFPNMULTI', # 优化
