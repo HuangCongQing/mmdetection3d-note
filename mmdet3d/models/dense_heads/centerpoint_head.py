@@ -239,7 +239,7 @@ class DCNSeparateHead(BaseModule):
 
 
 @HEADS.register_module()
-class CenterHead(BaseModule):
+class CenterHead(BaseModule): # 入口
     """CenterHead for CenterPoint.
 
     Args:

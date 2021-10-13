@@ -30,7 +30,7 @@ model = dict(
         upsample_cfg=dict(type='deconv', bias=False),
         use_conv_for_no_stride=True),
     pts_bbox_head=dict(
-        type='CenterHead',
+        type='CenterHead', # mmdet3d/models/dense_heads/centerpoint_head.py
         in_channels=sum([128, 128, 128]),
         tasks=[
             dict(num_class=1, class_names=['car']),

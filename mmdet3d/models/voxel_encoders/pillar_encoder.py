@@ -38,7 +38,7 @@ class PillarFeatureNet(nn.Module):
     """
 
     def __init__(self,
-                 in_channels=3,  #  x, y, z, r. Defaults to 4. 优化后x, y变成1维
+                 in_channels=4,  #  x, y, z, r. Defaults to 4. 优化后x, y变成1维
                  feat_channels=(64, ),  # （C, P）的Tensor，特征维度C=64，非空Pillar有P个。
                  with_distance=False,
                  with_cluster_center=True,
