@@ -185,8 +185,7 @@ def waymo_data_prep(root_path,
         relative_path=False,
         with_mask=False)
 
-# 新建
-
+# 新建ouster
 # python tools/create_data.py ouster --root-path ./data/ouster --out-dir ./data/ouster --extra-tag ouster
 def ouster_data_prep(root_path, info_prefix, version, out_dir):
     """Prepare data related to ouster dataset.
@@ -201,7 +200,7 @@ def ouster_data_prep(root_path, info_prefix, version, out_dir):
         out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/ouster
     """
     kitti.create_ouster_info_file(root_path, info_prefix) # 第一步  ouster
-    kitti.create_reduced_point_cloud(root_path, info_prefix) #
+    # kitti.create_reduced_point_cloud(root_path, info_prefix) #
     # 4个pkl文件路径
     info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
     info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
@@ -327,7 +326,7 @@ if __name__ == '__main__':
             info_prefix=args.extra_tag,
             out_dir=args.out_dir,
             workers=args.workers)
-    elif args.dataset == 'ouster': # 判断ouster参数 
+    elif args.dataset == 'ouster': # 判断ouster参数 ============================================
         ouster_data_prep(
             root_path=args.root_path,
             info_prefix=args.extra_tag,

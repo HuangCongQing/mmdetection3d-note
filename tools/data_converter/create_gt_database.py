@@ -214,6 +214,31 @@ def create_groundtruth_database(dataset_class_name,
                     with_label_3d=True,
                     file_client_args=file_client_args)
             ])
+    # Ouster新建
+    elif dataset_class_name == 'OusterDataset':
+        file_client_args = dict(backend='disk')
+        dataset_cfg.update(
+            test_mode=False,
+            split='training',
+            modality=dict(
+                use_lidar=True,
+                use_depth=False,
+                use_lidar_intensity=True,
+                use_camera=False, # 不用相机
+            ),
+            pipeline=[
+                dict(
+                    type='LoadPointsFromFile',
+                    coord_type='LIDAR',
+                    load_dim=6,
+                    use_dim=5,
+                    file_client_args=file_client_args),
+                dict(
+                    type='LoadAnnotations3D',
+                    with_bbox_3d=True,
+                    with_label_3d=True,
+                    file_client_args=file_client_args)
+            ])
 
     dataset = build_dataset(dataset_cfg)
 

@@ -51,7 +51,7 @@ def _calculate_num_points_in_gt(data_path,
                                 num_features=4):
     for info in mmcv.track_iter_progress(infos):
         pc_info = info['point_cloud']
-        image_info = info['image']
+        image_info = info['image'] # KeyError: 'image'
         calib = info['calib']
         if relative_path:
             v_path = str(Path(data_path) / pc_info['velodyne_path'])
@@ -179,10 +179,11 @@ def create_ouster_info_file(data_path,
         data_path,
         training=True,
         velodyne=True,
-        calib=True,
-        image_ids=train_img_ids,
+        calib=False, # 没有标定文件
+        image_ids=train_img_ids, # 文件名数组
         relative_path=relative_path)
-    _calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path)
+    # 计算gt中点的数量
+    # _calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path, False)
     filename = save_path / f'{pkl_prefix}_infos_train.pkl' # data/kitti/kitti_infos_train.pkl
     print(f'Kitti info train file is saved to {filename}')
     mmcv.dump(kitti_infos_train, filename)

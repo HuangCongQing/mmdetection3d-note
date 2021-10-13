@@ -13,6 +13,7 @@ from .builder import DATASETS, build_dataset
 from .custom_3d import Custom3DDataset
 from .custom_3d_seg import Custom3DSegDataset
 from .kitti_dataset import KittiDataset # kitti数据
+from .ouster_dataset import OusterDataset # ouster数据
 from .kitti_mono_dataset import KittiMonoDataset
 from .lyft_dataset import LyftDataset
 from .nuscenes_dataset import NuScenesDataset

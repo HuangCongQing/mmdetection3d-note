@@ -38,6 +38,6 @@ def build_dataset(cfg, default_args=None):
     elif isinstance(cfg.get('ann_file'), (list, tuple)):
         dataset = _concat_dataset(cfg, default_args)
     else:
-        dataset = build_from_cfg(cfg, DATASETS, default_args)
+        dataset = build_from_cfg(cfg, DATASETS, default_args) # KeyError: 'OusterDataset is not in the dataset registry'
 
     return dataset

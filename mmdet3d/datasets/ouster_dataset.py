@@ -17,7 +17,7 @@ from .pipelines import Compose # 组装
 
 
 @DATASETS.register_module()
-class KittiDataset(Custom3DDataset):
+class OusterDataset(Custom3DDataset):
     r"""KITTI Dataset.
 
     This class serves as the API for experiments on the `KITTI Dataset
@@ -120,7 +120,7 @@ class KittiDataset(Custom3DDataset):
         rect = info['calib']['R0_rect'].astype(np.float32)
         Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
         P2 = info['calib']['P2'].astype(np.float32)
-        lidar2img = P2 @ rect @ Trv2c #?????????????????
+        lidar2img = P2 @ rect @ Trv2c
 
         pts_filename = self._get_pts_filename(sample_idx)
         input_dict = dict(

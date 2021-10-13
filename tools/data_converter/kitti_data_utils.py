@@ -314,20 +314,20 @@ def get_ouster_image_info(path,
         if velodyne: # 原始点云数据======================================
             pc_info['velodyne_path'] = get_velodyne_path(
                 idx, path, training, relative_path)
-        image_info['image_path'] = get_image_path(idx, path, training,
-                                                  relative_path)
-        if with_imageshape:
-            img_path = image_info['image_path']
-            if relative_path:
-                img_path = str(root_path / img_path)
-            image_info['image_shape'] = np.array(
-                io.imread(img_path).shape[:2], dtype=np.int32)
+        # image_info['image_path'] = get_image_path(idx, path, training,
+        #                                           relative_path)
+        # if with_imageshape:
+        #     img_path = image_info['image_path']
+        #     if relative_path:
+        #         img_path = str(root_path / img_path)
+            # image_info['image_shape'] = np.array(
+            #     io.imread(img_path).shape[:2], dtype=np.int32)
         if label_info: # 有label信息
             label_path = get_label_path(idx, path, training, relative_path) # 得到路径
             if relative_path:
                 label_path = str(root_path / label_path)
             annotations = get_label_anno(label_path) # GT数据=====================================================最重要
-        info['image'] = image_info # 图像信息
+        # info['image'] = image_info # 图像信息
         info['point_cloud'] = pc_info # 点云数据
         if calib:
             calib_path = get_calib_path(
