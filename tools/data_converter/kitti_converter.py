@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# kitti数据处理
 import mmcv
 import numpy as np
 from collections import OrderedDict

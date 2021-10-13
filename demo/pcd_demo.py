@@ -3,6 +3,8 @@ from argparse import ArgumentParser
 
 from mmdet3d.apis import inference_detector, init_model, show_result_meshlab
 
+from tqdm import tqdm
+import time
 
 def main():
     parser = ArgumentParser()
@@ -27,9 +29,14 @@ def main():
 
     # build the model from a config file and a checkpoint file
     model = init_model(args.config, args.checkpoint, device=args.device)
-    # test a single image
-    result, data = inference_detector(model, args.pcd)
-    # show the results
+    # test a single image  循环50次，计算耗时
+    start = time.time()
+    for i in tqdm(range(50)):
+        result, data = inference_detector(model, args.pcd)
+    end = time.time()
+    print('Time comsumption:{:.3f}hz  based on GPU:{}'.format(50/(end - start), next(model.parameters()).is_cuda))
+
+    # show the results 生成。obj文件
     show_result_meshlab(
         data,
         result,
