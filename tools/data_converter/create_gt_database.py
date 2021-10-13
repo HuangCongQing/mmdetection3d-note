@@ -235,7 +235,7 @@ def create_groundtruth_database(dataset_class_name,
     group_counter = 0
     for j in track_iter_progress(list(range(len(dataset)))):
         input_dict = dataset.get_data_info(j)
-        dataset.pre_pipeline(input_dict)
+        dataset.pre_pipeline(input_dict) #  2. 调用 pre_pipeline() ， 扩展 input_dict 包含的属性信息
         example = dataset.pipeline(input_dict)
         annos = example['ann_info']
         image_idx = example['sample_idx']

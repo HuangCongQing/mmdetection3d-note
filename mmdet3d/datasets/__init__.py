@@ -1,9 +1,18 @@
+'''
+Description: 
+Author: HCQ
+Company(School): UCAS
+Email: 1756260160@qq.com
+Date: 2021-09-12 19:53:14
+LastEditTime: 2021-10-13 20:40:04
+FilePath: /mmdetection3d/mmdet3d/datasets/__init__.py
+'''
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmdet.datasets.builder import build_dataloader
 from .builder import DATASETS, build_dataset
 from .custom_3d import Custom3DDataset
 from .custom_3d_seg import Custom3DSegDataset
-from .kitti_dataset import KittiDataset
+from .kitti_dataset import KittiDataset # kitti数据
 from .kitti_mono_dataset import KittiMonoDataset
 from .lyft_dataset import LyftDataset
 from .nuscenes_dataset import NuScenesDataset

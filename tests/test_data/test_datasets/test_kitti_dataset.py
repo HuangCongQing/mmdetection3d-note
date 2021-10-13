@@ -145,7 +145,7 @@ def test_getitem():
             type='Collect3D', keys=['points', 'gt_bboxes_3d', 'gt_labels_3d'])
     ]
     kitti_dataset = KittiDataset(data_root, ann_file, split, pts_prefix,
-                                 pipeline, classes, modality)
+                                 pipeline, classes, modality) # 
     data = kitti_dataset[0]
     points = data['points']._data
     gt_bboxes_3d = data['gt_bboxes_3d']._data

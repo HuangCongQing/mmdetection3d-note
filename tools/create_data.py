@@ -24,14 +24,14 @@ def kitti_data_prep(root_path, info_prefix, version, out_dir):
         out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/kitti
     """
     kitti.create_kitti_info_file(root_path, info_prefix) # 第一步
-    kitti.create_reduced_point_cloud(root_path, info_prefix)
+    kitti.create_reduced_point_cloud(root_path, info_prefix) #
     # 4个pkl文件路径
     info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
     info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
     info_trainval_path = osp.join(root_path,
                                   f'{info_prefix}_infos_trainval.pkl')
     info_test_path = osp.join(root_path, f'{info_prefix}_infos_test.pkl')
-    # 生成4个pkl文件
+    # 生成4个pkl文件(得到2D的标注信息)
     kitti.export_2d_annotation(root_path, info_train_path)
     kitti.export_2d_annotation(root_path, info_val_path)
     kitti.export_2d_annotation(root_path, info_trainval_path)
@@ -141,7 +141,7 @@ def sunrgbd_data_prep(root_path, info_prefix, out_dir, workers):
     indoor.create_indoor_info_file(
         root_path, info_prefix, out_dir, workers=workers)
 
-
+# waymo
 def waymo_data_prep(root_path,
                     info_prefix,
                     version,
@@ -173,10 +173,10 @@ def waymo_data_prep(root_path,
             prefix=str(i),
             workers=workers,
             test_mode=(split == 'test'))
-        converter.convert()
+        converter.convert() # 转换
     # Generate waymo infos
     out_dir = osp.join(out_dir, 'kitti_format')
-    kitti.create_waymo_info_file(out_dir, info_prefix, max_sweeps=max_sweeps)
+    kitti.create_waymo_info_file(out_dir, info_prefix, max_sweeps=max_sweeps) # 创建waymo_info文件 pkl
     create_groundtruth_database(
         'WaymoDataset',
         out_dir,
@@ -184,6 +184,44 @@ def waymo_data_prep(root_path,
         f'{out_dir}/{info_prefix}_infos_train.pkl',
         relative_path=False,
         with_mask=False)
+
+# 新建
+
+# python tools/create_data.py ouster --root-path ./data/ouster --out-dir ./data/ouster --extra-tag ouster
+def ouster_data_prep(root_path, info_prefix, version, out_dir):
+    """Prepare data related to ouster dataset.
+
+    Related data consists of '.pkl' files recording basic infos,
+    2D annotations and groundtruth database.
+
+    Args:
+        root_path (str): Path of dataset root.  参数：./data/ouster
+        info_prefix (str): The prefix of info filenames.  参数：ouster
+        version (str): Dataset version.
+        out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/ouster
+    """
+    kitti.create_ouster_info_file(root_path, info_prefix) # 第一步  ouster
+    kitti.create_reduced_point_cloud(root_path, info_prefix) #
+    # 4个pkl文件路径
+    info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
+    info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
+    info_trainval_path = osp.join(root_path,
+                                  f'{info_prefix}_infos_trainval.pkl')
+    info_test_path = osp.join(root_path, f'{info_prefix}_infos_test.pkl')
+    # 生成4个pkl文件(得到2D的标注信息)
+    # kitti.export_2d_annotation(root_path, info_train_path)
+    # kitti.export_2d_annotation(root_path, info_val_path)
+    # kitti.export_2d_annotation(root_path, info_trainval_path)
+    # kitti.export_2d_annotation(root_path, info_test_path)
+    # 创建gtbase
+    create_groundtruth_database( # tools/data_converter/create_gt_database.py
+        'OusterDataset',
+        root_path,
+        info_prefix,
+        f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl
+        relative_path=False,
+        mask_anno_path='instances_train.json',
+        with_mask=(version == 'mask'))
 
 
 parser = argparse.ArgumentParser(description='Data converter arg parser')
@@ -263,7 +301,7 @@ if __name__ == '__main__':
             info_prefix=args.extra_tag,
             version=test_version,
             max_sweeps=args.max_sweeps)
-    elif args.dataset == 'waymo':
+    elif args.dataset == 'waymo': # waymo
         waymo_data_prep(
             root_path=args.root_path,
             info_prefix=args.extra_tag,
@@ -289,3 +327,9 @@ if __name__ == '__main__':
             info_prefix=args.extra_tag,
             out_dir=args.out_dir,
             workers=args.workers)
+    elif args.dataset == 'ouster': # 判断ouster参数 
+        ouster_data_prep(
+            root_path=args.root_path,
+            info_prefix=args.extra_tag,
+            version=args.version,
+            out_dir=args.out_dir)

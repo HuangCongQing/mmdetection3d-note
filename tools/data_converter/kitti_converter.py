@@ -7,7 +7,7 @@ from nuscenes.utils.geometry_utils import view_points
 from pathlib import Path
 
 from mmdet3d.core.bbox import box_np_ops
-from .kitti_data_utils import get_kitti_image_info, get_waymo_image_info
+from .kitti_data_utils import get_kitti_image_info, get_waymo_image_info, get_ouster_image_info
 from .nuscenes_converter import post_process_coords
 
 kitti_categories = ('Pedestrian', 'Cyclist', 'Car')
@@ -37,7 +37,7 @@ def convert_to_kitti_info_version2(info):
             'velodyne_path': info['velodyne_path'],
         }
 
-
+# 读取txt文件
 def _read_imageset_file(path):
     with open(path, 'r') as f:
         lines = f.readlines()
@@ -84,7 +84,7 @@ def _calculate_num_points_in_gt(data_path,
             [num_points_in_gt, -np.ones([num_ignored])])
         annos['num_points_in_gt'] = num_points_in_gt.astype(np.int32)
 
-# 生成info文件
+# 第一步骤：生成info文件
 def create_kitti_info_file(data_path,
                            pkl_prefix='kitti',
                            save_path=None,
@@ -100,7 +100,7 @@ def create_kitti_info_file(data_path,
         relative_path (bool): Whether to use relative path.
     """
     imageset_folder = Path(data_path) / 'ImageSets' # 
-    train_img_ids = _read_imageset_file(str(imageset_folder / 'train.txt'))
+    train_img_ids = _read_imageset_file(str(imageset_folder / 'train.txt')) # [1,2,3,4,....]
     val_img_ids = _read_imageset_file(str(imageset_folder / 'val.txt'))
     test_img_ids = _read_imageset_file(str(imageset_folder / 'test.txt'))
 
@@ -109,6 +109,7 @@ def create_kitti_info_file(data_path,
         save_path = Path(data_path)
     else:
         save_path = Path(save_path)
+    # 训练集 返回info
     kitti_infos_train = get_kitti_image_info(
         data_path,
         training=True,
@@ -117,9 +118,10 @@ def create_kitti_info_file(data_path,
         image_ids=train_img_ids,
         relative_path=relative_path)
     _calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path)
-    filename = save_path / f'{pkl_prefix}_infos_train.pkl'
+    filename = save_path / f'{pkl_prefix}_infos_train.pkl' # data/kitti/kitti_infos_train.pkl
     print(f'Kitti info train file is saved to {filename}')
     mmcv.dump(kitti_infos_train, filename)
+    # 验证
     kitti_infos_val = get_kitti_image_info(
         data_path,
         training=True,
@@ -133,9 +135,9 @@ def create_kitti_info_file(data_path,
     mmcv.dump(kitti_infos_val, filename)
     filename = save_path / f'{pkl_prefix}_infos_trainval.pkl'
     print(f'Kitti info trainval file is saved to {filename}')
-    mmcv.dump(kitti_infos_train + kitti_infos_val, filename)
-
-    kitti_infos_test = get_kitti_image_info(
+    mmcv.dump(kitti_infos_train + kitti_infos_val, filename) # 训练+验证
+    # 测试集
+    kitti_infos_test = get_kitti_image_info( # tools/data_converter/kitti_data_utils.py
         data_path,
         training=False,
         label_info=False,
@@ -147,7 +149,72 @@ def create_kitti_info_file(data_path,
     print(f'Kitti info test file is saved to {filename}')
     mmcv.dump(kitti_infos_test, filename)
 
+# ouster生成info文件
+def create_ouster_info_file(data_path,
+                           pkl_prefix='ouster',
+                           save_path=None,
+                           relative_path=True):
+    """Create info file of ouster dataset.
 
+    Given the raw data, generate its related info file in pkl format.
+
+    Args:
+        data_path (str): Path of the data root.
+        pkl_prefix (str): Prefix of the info file to be generated.
+        save_path (str): Path to save the info file.
+        relative_path (bool): Whether to use relative path.
+    """
+    imageset_folder = Path(data_path) / 'ImageSets' # 
+    train_img_ids = _read_imageset_file(str(imageset_folder / 'train.txt')) # [1,2,3,4,....]
+    val_img_ids = _read_imageset_file(str(imageset_folder / 'val.txt'))
+    test_img_ids = _read_imageset_file(str(imageset_folder / 'test.txt'))
+
+    print('Generate info. this may take several minutes.')
+    if save_path is None:
+        save_path = Path(data_path)
+    else:
+        save_path = Path(save_path)
+    # 训练集 返回info
+    kitti_infos_train = get_ouster_image_info( # 已修改
+        data_path,
+        training=True,
+        velodyne=True,
+        calib=True,
+        image_ids=train_img_ids,
+        relative_path=relative_path)
+    _calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path)
+    filename = save_path / f'{pkl_prefix}_infos_train.pkl' # data/kitti/kitti_infos_train.pkl
+    print(f'Kitti info train file is saved to {filename}')
+    mmcv.dump(kitti_infos_train, filename)
+    # 验证
+    # kitti_infos_val = get_ouster_image_info(
+    #     data_path,
+    #     training=True,
+    #     velodyne=True,
+    #     calib=True,
+    #     image_ids=val_img_ids,
+    #     relative_path=relative_path)
+    # _calculate_num_points_in_gt(data_path, kitti_infos_val, relative_path)
+    # filename = save_path / f'{pkl_prefix}_infos_val.pkl'
+    # print(f'Kitti info val file is saved to {filename}')
+    # mmcv.dump(kitti_infos_val, filename)
+    # filename = save_path / f'{pkl_prefix}_infos_trainval.pkl'
+    # print(f'Kitti info trainval file is saved to {filename}')
+    # mmcv.dump(kitti_infos_train + kitti_infos_val, filename) # 训练+验证
+    # 测试集
+    # kitti_infos_test = get_ouster_image_info( # tools/data_converter/kitti_data_utils.py
+    #     data_path,
+    #     training=False,
+    #     label_info=False,
+    #     velodyne=True,
+    #     calib=True,
+    #     image_ids=test_img_ids,
+    #     relative_path=relative_path)
+    # filename = save_path / f'{pkl_prefix}_infos_test.pkl'
+    # print(f'Kitti info test file is saved to {filename}')
+    # mmcv.dump(kitti_infos_test, filename)
+
+# 创建waymo_info文件 pkl
 def create_waymo_info_file(data_path,
                            pkl_prefix='waymo',
                            save_path=None,
@@ -183,6 +250,7 @@ def create_waymo_info_file(data_path,
         image_ids=train_img_ids,
         relative_path=relative_path,
         max_sweeps=max_sweeps)
+
     _calculate_num_points_in_gt(
         data_path,
         waymo_infos_train,
@@ -213,7 +281,7 @@ def create_waymo_info_file(data_path,
     filename = save_path / f'{pkl_prefix}_infos_trainval.pkl'
     print(f'Waymo info trainval file is saved to {filename}')
     mmcv.dump(waymo_infos_train + waymo_infos_val, filename)
-    waymo_infos_test = get_waymo_image_info(
+    waymo_infos_test = get_waymo_image_info( # tools/data_converter/kitti_data_utils.py
         data_path,
         training=False,
         label_info=False,
@@ -227,7 +295,7 @@ def create_waymo_info_file(data_path,
     print(f'Waymo info test file is saved to {filename}')
     mmcv.dump(waymo_infos_test, filename)
 
-
+#  压缩的点云?????
 def _create_reduced_point_cloud(data_path,
                                 info_path,
                                 save_path=None,
@@ -329,7 +397,7 @@ def create_reduced_point_cloud(data_path,
         _create_reduced_point_cloud(
             data_path, test_info_path, save_path, back=True)
 
-
+# 导出为pkl
 def export_2d_annotation(root_path, info_path, mono3d=True):
     """Export 2d annotation from the info file and raw data.
 

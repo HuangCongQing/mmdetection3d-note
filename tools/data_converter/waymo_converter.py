@@ -15,7 +15,7 @@ import numpy as np
 import tensorflow as tf
 from glob import glob
 from os.path import join
-from waymo_open_dataset.utils import range_image_utils, transform_utils
+from waymo_open_dataset.utils import range_image_utils, transform_utils # pip install waymo-open-dataset
 from waymo_open_dataset.utils.frame_utils import \
     parse_range_image_and_camera_projection
 
@@ -87,8 +87,8 @@ class Waymo2KITTI(object):
         self.point_cloud_save_dir = f'{self.save_dir}/velodyne'
         self.pose_save_dir = f'{self.save_dir}/pose'
 
-        self.create_folder()
-
+        self.create_folder() # 创建文件夹
+    # 执行开始处
     def convert(self):
         """Convert action."""
         print('Start converting ...')
@@ -114,9 +114,9 @@ class Waymo2KITTI(object):
                     not in self.selected_waymo_locations):
                 continue
 
-            self.save_image(frame, file_idx, frame_idx)
-            self.save_calib(frame, file_idx, frame_idx)
-            self.save_lidar(frame, file_idx, frame_idx)
+            self.save_image(frame, file_idx, frame_idx) # 保存图像
+            self.save_calib(frame, file_idx, frame_idx) 
+            self.save_lidar(frame, file_idx, frame_idx)# 保存点云
             self.save_pose(frame, file_idx, frame_idx)
 
             if not self.test_mode:
@@ -196,7 +196,7 @@ class Waymo2KITTI(object):
                 'w+') as fp_calib:
             fp_calib.write(calib_context)
             fp_calib.close()
-
+    # 保存点云
     def save_lidar(self, frame, file_idx, frame_idx):
         """Parse and save the lidar data in psd format.
 
@@ -365,7 +365,7 @@ class Waymo2KITTI(object):
             join(f'{self.pose_save_dir}/{self.prefix}' +
                  f'{str(file_idx).zfill(3)}{str(frame_idx).zfill(3)}.txt'),
             pose)
-
+    # 创建文件夹
     def create_folder(self):
         """Create folder for data preprocessing."""
         if not self.test_mode:
@@ -385,7 +385,7 @@ class Waymo2KITTI(object):
         for d in dir_list2:
             for i in range(5):
                 mmcv.mkdir_or_exist(f'{d}{str(i)}')
-
+    # 图像转点云
     def convert_range_image_to_point_cloud(self,
                                            frame,
                                            range_images,

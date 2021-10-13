@@ -200,7 +200,7 @@ def main():
     vis_task = args.task  # 'det', 'seg', 'multi_modality-det', 'mono-det'
 
     for idx, data_info in enumerate(track_iter_progress(data_infos)):
-        if dataset_type in ['KittiDataset', 'WaymoDataset']:
+        if dataset_type in ['KittiDataset', 'WaymoDataset', 'OusterDataset']:
             data_path = data_info['point_cloud']['velodyne_path']
         elif dataset_type in [
                 'ScanNetDataset', 'SUNRGBDDataset', 'ScanNetSegDataset',

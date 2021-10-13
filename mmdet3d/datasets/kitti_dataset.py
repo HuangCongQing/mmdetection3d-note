@@ -92,7 +92,7 @@ class KittiDataset(Custom3DDataset):
         pts_filename = osp.join(self.root_split, self.pts_prefix,
                                 f'{idx:06d}.bin')
         return pts_filename
-
+    # 
     def get_data_info(self, index):
         """Get data info according to the given index.
 
@@ -135,7 +135,7 @@ class KittiDataset(Custom3DDataset):
             input_dict['ann_info'] = annos
 
         return input_dict
-
+    #   调用 get_anno_info() ，加载 anno 里面的 boxes， 格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
     def get_ann_info(self, index):
         """Get annotation info according to the given index.
 
@@ -167,7 +167,7 @@ class KittiDataset(Custom3DDataset):
         gt_bboxes_3d = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1).astype(np.float32)
 
-        # convert gt_bboxes_3d to velodyne coordinates
+        # convert gt_bboxes_3d to velodyne coordinates  格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
         gt_bboxes_3d = CameraInstance3DBoxes(gt_bboxes_3d).convert_to(
             self.box_mode_3d, np.linalg.inv(rect @ Trv2c))
         gt_bboxes = annos['bbox']
