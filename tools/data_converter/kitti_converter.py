@@ -84,7 +84,7 @@ def _calculate_num_points_in_gt(data_path,
             [num_points_in_gt, -np.ones([num_ignored])])
         annos['num_points_in_gt'] = num_points_in_gt.astype(np.int32)
 
-
+# 生成info文件
 def create_kitti_info_file(data_path,
                            pkl_prefix='kitti',
                            save_path=None,
@@ -99,7 +99,7 @@ def create_kitti_info_file(data_path,
         save_path (str): Path to save the info file.
         relative_path (bool): Whether to use relative path.
     """
-    imageset_folder = Path(data_path) / 'ImageSets'
+    imageset_folder = Path(data_path) / 'ImageSets' # 
     train_img_ids = _read_imageset_file(str(imageset_folder / 'train.txt'))
     val_img_ids = _read_imageset_file(str(imageset_folder / 'val.txt'))
     test_img_ids = _read_imageset_file(str(imageset_folder / 'test.txt'))

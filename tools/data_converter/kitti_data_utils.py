@@ -137,7 +137,7 @@ def _extend_matrix(mat):
     mat = np.concatenate([mat, np.array([[0., 0., 0., 1.]])], axis=0)
     return mat
 
-
+# 主函数
 def get_kitti_image_info(path,
                          training=True,
                          label_info=True,

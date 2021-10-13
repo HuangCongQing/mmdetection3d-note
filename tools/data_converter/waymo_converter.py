@@ -19,7 +19,7 @@ from waymo_open_dataset.utils import range_image_utils, transform_utils
 from waymo_open_dataset.utils.frame_utils import \
     parse_range_image_and_camera_projection
 
-
+# waymo转换为kitti
 class Waymo2KITTI(object):
     """Waymo to KITTI converter.
 
