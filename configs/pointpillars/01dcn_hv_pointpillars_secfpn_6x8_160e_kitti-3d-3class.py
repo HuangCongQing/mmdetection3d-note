@@ -85,7 +85,7 @@ data = dict(
 
 model = dict(
     backbone=dict(
-        # _delete_=True,  # 忽略基础配置文件里的部分内容
+        # _delete_=True,  # 覆盖基础配置文件里的部分内容
         type='DCSECOND',  # # 优化1：代替原来的SECOND
         in_channels=64,
         layer_nums=[3, 5, 5],
@@ -97,6 +97,7 @@ model = dict(
     
     # 优化2：多检测融合（无效果）
     # neck=dict(
+    # _delete_=True,  # 覆盖基础配置文件里的部分内容
     #     type='SECONDFPNMULTI', # 优化
     #     in_channels=[64, 128, 256],
     #     upsample_strides=[1, 2, 4],
@@ -115,7 +116,7 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # PointPillars usually need longer schedule than second, we simply double
 # the training schedule. Do remind that since we use RepeatDataset and
 # repeat factor is 2, so we actually train 160 epochs.
-runner = dict(max_epochs=80)
+runner = dict(max_epochs=80) # 80个epochs
 
 # Use evaluation interval=2 reduce the number of evaluation timese
 evaluation = dict(interval=2)
