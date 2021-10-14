@@ -155,9 +155,9 @@ def create_groundtruth_database(dataset_class_name,
                 use_lidar_intensity=True,
                 use_camera=with_mask,
             ),
-            pipeline=[
+            pipeline=[ # ===============================================================================================================
                 dict(
-                    type='LoadPointsFromFile',
+                    type='LoadPointsFromFile', # 
                     coord_type='LIDAR',
                     load_dim=4,
                     use_dim=4,
@@ -244,7 +244,7 @@ def create_groundtruth_database(dataset_class_name,
     # 
     if database_save_path is None:
         database_save_path = osp.join(data_path, f'{info_prefix}_gt_database')
-    if db_info_save_path is None:
+    if db_info_save_path is None: # './data/kitti/kitti_dbinfos_train.pkl'
         db_info_save_path = osp.join(data_path,
                                      f'{info_prefix}_dbinfos_train.pkl')
     mmcv.mkdir_or_exist(database_save_path)
@@ -260,12 +260,13 @@ def create_groundtruth_database(dataset_class_name,
     group_counter = 0
     for j in track_iter_progress(list(range(len(dataset)))):
         input_dict = dataset.get_data_info(j) # mmdet3d/datasets/kitti_dataset.py
-        dataset.pre_pipeline(input_dict) #  2. 调用 pre_pipeline() ， 扩展 input_dict 包含的属性信息
-        example = dataset.pipeline(input_dict) # 将得到的
+        dataset.pre_pipeline(input_dict) #  2. 调用 pre_pipeline() ， 扩展 input_dict 包含的属性信息 mmdet3d/datasets/custom_3d.py
+        example = dataset.pipeline(input_dict) # self.pipeline = Compose(pipeline)  mmdet3d/datasets/custom_3d.py将得到的===============================================================
+        # 
         annos = example['ann_info']
         image_idx = example['sample_idx'] #image_idx来源  mage_idx: object 所在样本下标
         points = example['points'].tensor.numpy() # 原始点
-        gt_boxes_3d = annos['gt_bboxes_3d'].tensor.numpy() # # GT点 x,y,z,r
+        gt_boxes_3d = annos['gt_bboxes_3d'].tensor.numpy() # # GT点 7
         names = annos['gt_names']
         group_dict = dict()
         if 'group_ids' in annos:
@@ -311,7 +312,8 @@ def create_groundtruth_database(dataset_class_name,
                 gt_boxes, gt_masks, mask_inds, annos['img'])
 
         for i in range(num_obj):
-            filename = f'{image_idx}_{names[i]}_{i}.bin'
+            #  (000003_Car_0.bin)
+            filename = f'{image_idx}_{names[i]}_{i}.bin' # bin文件
             abs_filepath = osp.join(database_save_path, filename)
             rel_filepath = osp.join(f'{info_prefix}_gt_database', filename)
 

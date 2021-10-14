@@ -1,7 +1,16 @@
+'''
+Description:
+Author: HCQ
+Company(School): UCAS
+Email: 1756260160@qq.com
+Date: 2021-09-12 19:53:14
+LastEditTime: 2021-10-14 15:46:38
+FilePath: /mmdetection3d/mmdet3d/core/points/lidar_points.py
+'''
 # Copyright (c) OpenMMLab. All rights reserved.
 from .base_points import BasePoints
 
-
+# 
 class LiDARPoints(BasePoints):
     """Points of instances in LIDAR coordinates.
 

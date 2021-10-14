@@ -112,7 +112,7 @@ class KittiDataset(Custom3DDataset):
                 - ann_info (dict): Annotation info.
         """
         info = self.data_infos[index]
-        sample_idx = info['image']['image_idx']
+        sample_idx = info['image']['image_idx'] # 得到是第几张图片
         img_filename = os.path.join(self.data_root,
                                     info['image']['image_path'])
 
@@ -134,7 +134,7 @@ class KittiDataset(Custom3DDataset):
             annos = self.get_ann_info(index) # mmdet3d/datasets/kitti_dataset.py
             input_dict['ann_info'] = annos
 
-        return input_dict
+        return input_dict # 最终的输出==========================================================
     #   调用 get_anno_info() ，加载 anno 里面的 boxes， 格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
     def get_ann_info(self, index):
         """Get annotation info according to the given index.

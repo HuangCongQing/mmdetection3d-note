@@ -43,7 +43,7 @@ def _read_imageset_file(path):
         lines = f.readlines()
     return [int(line) for line in lines]
 
-
+#添加个数据： annos['num_points_in_gt'] 
 def _calculate_num_points_in_gt(data_path,
                                 infos,
                                 relative_path,
@@ -117,6 +117,7 @@ def create_kitti_info_file(data_path,
         calib=True,
         image_ids=train_img_ids,
         relative_path=relative_path)
+    # 添加个数据gt的数量： annos['num_points_in_gt'] 
     _calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path)
     filename = save_path / f'{pkl_prefix}_infos_train.pkl' # data/kitti/kitti_infos_train.pkl
     print(f'Kitti info train file is saved to {filename}')

@@ -20,7 +20,7 @@ def get_points_type(points_type):
     if points_type == 'CAMERA':
         points_cls = CameraPoints
     elif points_type == 'LIDAR':
-        points_cls = LiDARPoints
+        points_cls = LiDARPoints  # mmdet3d/core/points/lidar_points.py
     elif points_type == 'DEPTH':
         points_cls = DepthPoints
     else:
