@@ -215,7 +215,7 @@ db_sampler = dict(
     classes=class_names,
     sample_groups=dict(Car=20, Pedestrian=15, Cyclist=15))
 train_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4),
+    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4),#  加载原始点 mmdet3d/datasets/pipelines/loading.py
     dict(type='LoadAnnotations3D', with_bbox_3d=True, with_label_3d=True),
     dict(type='ObjectSample', db_sampler=db_sampler),
     dict(type='RandomFlip3D', flip_ratio_bev_horizontal=0.5),
@@ -268,7 +268,7 @@ data = dict(
     samples_per_gpu=4,
     workers_per_gpu=4,
     train=dict(
-        type=dataset_type,
+        type=dataset_type, # dataset_type = 'KittiDataset' # mmdet3d/datasets/kitti_dataset.py
         data_root=data_root,
         ann_file=data_root + 'kitti_infos_train.pkl',
         split='training',
@@ -278,7 +278,7 @@ data = dict(
         classes=class_names,
         test_mode=False),
     val=dict(
-        type=dataset_type,
+        type=dataset_type, # dataset_type = 'KittiDataset'
         data_root=data_root,
         ann_file=data_root + 'kitti_infos_val.pkl',
         split='training',

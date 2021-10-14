@@ -6,7 +6,7 @@ point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 input_modality = dict(use_lidar=True, use_camera=False)
 db_sampler = dict( # mmdet3d/datasets/pipelines/dbsampler.py
     data_root=data_root,
-    info_path=data_root + 'kitti_dbinfos_train.pkl',
+    info_path=data_root + 'kitti_dbinfos_train.pkl', # 
     rate=1.0,
     prepare=dict(
         filter_by_difficulty=[-1],
@@ -26,7 +26,7 @@ train_pipeline = [
     dict(
         type='LoadPointsFromFile',  # mmdet3d/datasets/pipelines/loading.py 第一个流程，用于读取点，更多细节请参考 mmdet3d.datasets.pipelines.indoor_loading
         coord_type='LIDAR',  # 雷达数据
-        load_dim=4,  # 读取的点的维度
+        load_dim=4,  # 读取的点的维度   x,y,z,r
         use_dim=4, # 使用所读取点的哪些维度
         file_client_args=file_client_args),
     dict(

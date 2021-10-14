@@ -54,7 +54,7 @@ class KittiDataset(Custom3DDataset):
 
     def __init__(self,
                  data_root,
-                 ann_file,
+                 ann_file, # kitti_infos_train.pkl
                  split,
                  pts_prefix='velodyne',
                  pipeline=None,
@@ -131,7 +131,7 @@ class KittiDataset(Custom3DDataset):
             lidar2img=lidar2img)
 
         if not self.test_mode:
-            annos = self.get_ann_info(index) # mmdet3d/datasets/kitti_dataset.py
+            annos = self.get_ann_info(index) # 得到GT数据mmdet3d/datasets/kitti_dataset.py
             input_dict['ann_info'] = annos
 
         return input_dict # 最终的输出==========================================================
@@ -159,7 +159,7 @@ class KittiDataset(Custom3DDataset):
 
         annos = info['annos']
         # we need other objects to avoid collision when sample
-        annos = self.remove_dontcare(annos)
+        annos = self.remove_dontcare(annos) # 移除
         loc = annos['location']
         dims = annos['dimensions']
         rots = annos['rotation_y']
@@ -188,8 +188,8 @@ class KittiDataset(Custom3DDataset):
         anns_results = dict(
             gt_bboxes_3d=gt_bboxes_3d,
             gt_labels_3d=gt_labels_3d,
-            bboxes=gt_bboxes,
-            labels=gt_labels,
+            bboxes=gt_bboxes, # 2D
+            labels=gt_labels, # 2D
             gt_names=gt_names)
         return anns_results
 

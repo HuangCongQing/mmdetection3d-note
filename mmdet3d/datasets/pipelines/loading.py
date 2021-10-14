@@ -4,7 +4,7 @@ import numpy as np
 
 from mmdet3d.core.points import BasePoints, get_points_type
 from mmdet.datasets.builder import PIPELINES
-from mmdet.datasets.pipelines import LoadAnnotations, LoadImageFromFile
+from mmdet.datasets.pipelines import LoadAnnotations, LoadImageFromFile # 标注信息
 
 
 @PIPELINES.register_module()
@@ -329,7 +329,7 @@ class NormalizePointsColor(object):
         repr_str += f'(color_mean={self.color_mean})'
         return repr_str
 
-
+# 加载点云数据
 @PIPELINES.register_module()
 class LoadPointsFromFile(object):
     """Load Points From File.
@@ -452,7 +452,7 @@ class LoadPointsFromFile(object):
         repr_str += f'use_dim={self.use_dim})'
         return repr_str
 
-# GT标注信息
+# GT标注信息=======================
 @PIPELINES.register_module()
 class LoadAnnotations3D(LoadAnnotations):
     """Load Annotations3D.

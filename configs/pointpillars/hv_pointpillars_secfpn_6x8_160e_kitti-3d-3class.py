@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-09-13 11:37:47
+LastEditTime: 2021-10-14 16:52:03
 FilePath: /mmdetection3d/configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py
 '''
 _base_ = [
@@ -31,7 +31,7 @@ db_sampler = dict(
 
 # PointPillars uses different augmentation hyper parameters
 train_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4),
+    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4), # 加载点云文件  # mmdet3d/datasets/pipelines/loading.py
     dict(type='LoadAnnotations3D', with_bbox_3d=True, with_label_3d=True),
     dict(type='ObjectSample', db_sampler=db_sampler),
     dict(
