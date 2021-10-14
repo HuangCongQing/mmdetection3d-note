@@ -112,7 +112,7 @@ class OusterDataset(Custom3DDataset):
                 - ann_info (dict): Annotation info.
         """
         info = self.data_infos[index]
-        sample_idx = info['image']['image_idx']
+        sample_idx = info['image']['image_idx'] # 报错
         img_filename = os.path.join(self.data_root,
                                     info['image']['image_path'])
 

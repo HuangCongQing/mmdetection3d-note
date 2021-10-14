@@ -249,7 +249,7 @@ def create_groundtruth_database(dataset_class_name,
                                      f'{info_prefix}_dbinfos_train.pkl')
     mmcv.mkdir_or_exist(database_save_path)
     all_db_infos = dict()
-    if with_mask:
+    if with_mask: #  Default: False.
         coco = COCO(osp.join(data_path, mask_anno_path))
         imgIds = coco.getImgIds()
         file2id = dict()
@@ -323,7 +323,7 @@ def create_groundtruth_database(dataset_class_name,
                 if object_masks[i].sum() == 0 or not valid_inds[i]:
                     # Skip object for empty or invalid mask
                     continue
-                img_patch_path = abs_filepath + '.png'
+                img_patch_path = abs_filepath + '.png' # 图像
                 mask_patch_path = abs_filepath + '.mask.png'
                 mmcv.imwrite(object_img_patches[i], img_patch_path)
                 mmcv.imwrite(object_masks[i], mask_patch_path)
@@ -360,4 +360,4 @@ def create_groundtruth_database(dataset_class_name,
         print(f'load {len(v)} {k} database infos')
 
     with open(db_info_save_path, 'wb') as f:
-        pickle.dump(all_db_infos, f)
+        pickle.dump(all_db_infos, f) # 生成pkl数据

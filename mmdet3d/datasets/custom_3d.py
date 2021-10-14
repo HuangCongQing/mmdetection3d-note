@@ -44,7 +44,7 @@ class Custom3DDataset(Dataset):
 
     def __init__(self,
                  data_root, # 数据集目录
-                 ann_file, # 标注文件目录
+                 ann_file, # 标注文件目录 # './data/ouster/ouster_infos_train.pkl'
                  pipeline=None,
                  classes=None,
                  modality=None,
@@ -61,7 +61,7 @@ class Custom3DDataset(Dataset):
 
         self.CLASSES = self.get_classes(classes)
         self.cat2id = {name: i for i, name in enumerate(self.CLASSES)}
-        self.data_infos = self.load_annotations(self.ann_file)
+        self.data_infos = self.load_annotations(self.ann_file) # list:5 每个list包含{"point_cloud": bin文件和“annos”：对应的GT }
 
         if pipeline is not None:
             self.pipeline = Compose(pipeline) #  以 compose 的方式组合为一个函数，由 dataset 对数据预处理时调用：

@@ -179,7 +179,7 @@ def get_kitti_image_info(path,
     root_path = Path(path)
     if not isinstance(image_ids, list): # image_ids=7481,
         image_ids = list(range(image_ids)) # 转成list格式
-    #处理单帧数据
+    #处理单帧数据 [>>>>>>>>>>>>>>>>>>>>>>>>>>>] 3712/3712, 
     def map_func(idx):
         info = {}
         pc_info = {'num_features': 4}
@@ -255,7 +255,7 @@ def get_kitti_image_info(path,
             info['annos'] = annotations
             add_difficulty_to_annos(info)
         return info # 返回info
-
+    # 循环处理    [>>>>>>>>>>>>>>>>>>>>>>>>>>>] 3712/3712
     with futures.ThreadPoolExecutor(num_worker) as executor:
         image_infos = executor.map(map_func, image_ids) # n info # 返回info
 

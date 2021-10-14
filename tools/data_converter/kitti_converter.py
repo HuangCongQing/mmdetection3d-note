@@ -104,7 +104,7 @@ def create_kitti_info_file(data_path,
     val_img_ids = _read_imageset_file(str(imageset_folder / 'val.txt'))
     test_img_ids = _read_imageset_file(str(imageset_folder / 'test.txt'))
 
-    print('Generate info. this may take several minutes.')
+    print('Generate info. this may take several minutes.【kitti_converter.py】')
     if save_path is None:
         save_path = Path(data_path)
     else:
