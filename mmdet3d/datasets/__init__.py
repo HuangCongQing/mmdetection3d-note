@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 19:53:14
-LastEditTime: 2021-10-13 20:40:04
+LastEditTime: 2021-10-14 11:46:25
 FilePath: /mmdetection3d/mmdet3d/datasets/__init__.py
 '''
 # Copyright (c) OpenMMLab. All rights reserved.
@@ -37,7 +37,7 @@ from .utils import get_loading_pipeline
 from .waymo_dataset import WaymoDataset
 
 __all__ = [
-    'KittiDataset', 'KittiMonoDataset', 'build_dataloader', 'DATASETS',
+    'KittiDataset', 'OusterDataset', 'KittiMonoDataset', 'build_dataloader', 'DATASETS',
     'build_dataset', 'NuScenesDataset', 'NuScenesMonoDataset', 'LyftDataset',
     'ObjectSample', 'RandomFlip3D', 'ObjectNoise', 'GlobalRotScaleTrans',
     'PointShuffle', 'ObjectRangeFilter', 'PointsRangeFilter',

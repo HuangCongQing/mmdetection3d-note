@@ -12,12 +12,12 @@ from mmdet.datasets import DATASETS
 from ..core import show_multi_modality_result, show_result
 from ..core.bbox import (Box3DMode, CameraInstance3DBoxes, Coord3DMode,
                          LiDARInstance3DBoxes, points_cam2img)
-from .custom_3d import Custom3DDataset
+from .custom_3d import Custom3DDataset # base模块
 from .pipelines import Compose # 组装
 
 
 @DATASETS.register_module()
-class KittiDataset(Custom3DDataset):
+class KittiDataset(Custom3DDataset): 
     r"""KITTI Dataset.
 
     This class serves as the API for experiments on the `KITTI Dataset
@@ -79,7 +79,7 @@ class KittiDataset(Custom3DDataset):
         assert self.modality is not None
         self.pcd_limit_range = pcd_limit_range
         self.pts_prefix = pts_prefix
-
+    # 通过下标得到原始bin文件路径
     def _get_pts_filename(self, idx):
         """Get point cloud filename according to the given index.
 
@@ -120,18 +120,18 @@ class KittiDataset(Custom3DDataset):
         rect = info['calib']['R0_rect'].astype(np.float32)
         Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
         P2 = info['calib']['P2'].astype(np.float32)
-        lidar2img = P2 @ rect @ Trv2c #?????????????????
+        lidar2img = P2 @ rect @ Trv2c #????????????????? 矩阵相乘
 
         pts_filename = self._get_pts_filename(sample_idx)
         input_dict = dict(
             sample_idx=sample_idx,
-            pts_filename=pts_filename,
+            pts_filename=pts_filename, # 原始点文件名
             img_prefix=None,
             img_info=dict(filename=img_filename),
             lidar2img=lidar2img)
 
         if not self.test_mode:
-            annos = self.get_ann_info(index)
+            annos = self.get_ann_info(index) # mmdet3d/datasets/kitti_dataset.py
             input_dict['ann_info'] = annos
 
         return input_dict

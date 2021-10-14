@@ -452,7 +452,7 @@ class LoadPointsFromFile(object):
         repr_str += f'use_dim={self.use_dim})'
         return repr_str
 
-
+# GT标注信息
 @PIPELINES.register_module()
 class LoadAnnotations3D(LoadAnnotations):
     """Load Annotations3D.

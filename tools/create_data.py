@@ -38,7 +38,7 @@ def kitti_data_prep(root_path, info_prefix, version, out_dir):
     kitti.export_2d_annotation(root_path, info_test_path)
     # 创建gtbase
     create_groundtruth_database( # tools/data_converter/create_gt_database.py
-        'KittiDataset',
+        'KittiDataset', # mmdet3d/datasets/kitti_dataset.py
         root_path,
         info_prefix,
         f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl

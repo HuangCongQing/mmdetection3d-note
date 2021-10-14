@@ -11,7 +11,11 @@ from mmdet.datasets import DATASETS
 from ..core.bbox import Box3DMode, points_cam2img
 from .kitti_dataset import KittiDataset
 
-
+'''  
+具体来说，首先使用数据转换器将 Waymo 数据集转换成 KITTI 数据集的格式，并定义 Waymo 类对转换的数据进行处理。
+因为我们将 Waymo 原始数据集进行预处理并重新组织成 KITTI 数据集的格式，因此可以比较容易通过继承 KittiDataset 类来实现 WaymoDataset 类。
+需要注意的是，由于 Waymo 数据集有相应的官方评估方法，我们需要在定义新数据类的过程中引入官方评估方法，此时用户可以顺利的转换 Waymo 数据的格式，并使用 WaymoDataset 数据类进行模型的训练和评估。
+'''
 @DATASETS.register_module()
 class WaymoDataset(KittiDataset):
     """Waymo Dataset.

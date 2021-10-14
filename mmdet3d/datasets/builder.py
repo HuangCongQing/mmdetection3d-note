@@ -2,7 +2,7 @@
 import platform
 from mmcv.utils import Registry, build_from_cfg
 
-from mmdet.datasets import DATASETS
+from mmdet.datasets import DATASETS # mmdet3d/datasets/__init__.py
 from mmdet.datasets.builder import _concat_dataset
 
 if platform.system() != 'Windows':
@@ -38,6 +38,6 @@ def build_dataset(cfg, default_args=None):
     elif isinstance(cfg.get('ann_file'), (list, tuple)):
         dataset = _concat_dataset(cfg, default_args)
     else:
-        dataset = build_from_cfg(cfg, DATASETS, default_args) # KeyError: 'OusterDataset is not in the dataset registry'
+        dataset = build_from_cfg(cfg, DATASETS, default_args) # # mmdet3d/datasets/__init__.py OusterDataset    KeyError: 'OusterDataset is not in the dataset registry'
 
     return dataset

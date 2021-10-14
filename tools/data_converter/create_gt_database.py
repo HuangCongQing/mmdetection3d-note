@@ -105,7 +105,7 @@ def crop_image_patch(pos_proposals, gt_masks, pos_assigned_gt_inds, org_img):
         masks.append(mask_patch)
     return img_patches, masks
 
-
+# 创建GT 数据集
 def create_groundtruth_database(dataset_class_name,
                                 data_path,
                                 info_prefix,
@@ -228,20 +228,20 @@ def create_groundtruth_database(dataset_class_name,
             ),
             pipeline=[
                 dict(
-                    type='LoadPointsFromFile',
+                    type='LoadPointsFromFile', # 加载点云文件
                     coord_type='LIDAR',
                     load_dim=6,
                     use_dim=5,
                     file_client_args=file_client_args),
                 dict(
-                    type='LoadAnnotations3D',
+                    type='LoadAnnotations3D', # 加载标注文件
                     with_bbox_3d=True,
                     with_label_3d=True,
                     file_client_args=file_client_args)
             ])
 
-    dataset = build_dataset(dataset_cfg)
-
+    dataset = build_dataset(dataset_cfg) # mmdet3d/datasets/builder.py
+    # 
     if database_save_path is None:
         database_save_path = osp.join(data_path, f'{info_prefix}_gt_database')
     if db_info_save_path is None:
@@ -259,17 +259,17 @@ def create_groundtruth_database(dataset_class_name,
 
     group_counter = 0
     for j in track_iter_progress(list(range(len(dataset)))):
-        input_dict = dataset.get_data_info(j)
+        input_dict = dataset.get_data_info(j) # mmdet3d/datasets/kitti_dataset.py
         dataset.pre_pipeline(input_dict) #  2. 调用 pre_pipeline() ， 扩展 input_dict 包含的属性信息
-        example = dataset.pipeline(input_dict)
+        example = dataset.pipeline(input_dict) # 将得到的
         annos = example['ann_info']
-        image_idx = example['sample_idx']
-        points = example['points'].tensor.numpy()
-        gt_boxes_3d = annos['gt_bboxes_3d'].tensor.numpy()
+        image_idx = example['sample_idx'] #image_idx来源  mage_idx: object 所在样本下标
+        points = example['points'].tensor.numpy() # 原始点
+        gt_boxes_3d = annos['gt_bboxes_3d'].tensor.numpy() # # GT点 x,y,z,r
         names = annos['gt_names']
         group_dict = dict()
         if 'group_ids' in annos:
-            group_ids = annos['group_ids']
+            group_ids = annos['group_ids'] #     group_id: object 属于该 group 里面的第几个 (也就是 list 的1-based index.)
         else:
             group_ids = np.arange(gt_boxes_3d.shape[0], dtype=np.int64)
         difficulty = np.zeros(gt_boxes_3d.shape[0], dtype=np.int32)
@@ -317,7 +317,7 @@ def create_groundtruth_database(dataset_class_name,
 
             # save point clouds and image patches for each object
             gt_points = points[point_indices[:, i]]
-            gt_points[:, :3] -= gt_boxes_3d[i, :3]
+            gt_points[:, :3] -= gt_boxes_3d[i, :3] # GT点 x,y,z,r
 
             if with_mask:
                 if object_masks[i].sum() == 0 or not valid_inds[i]:
@@ -335,9 +335,9 @@ def create_groundtruth_database(dataset_class_name,
                 db_info = {
                     'name': names[i],
                     'path': rel_filepath,
-                    'image_idx': image_idx,
-                    'gt_idx': i,
-                    'box3d_lidar': gt_boxes_3d[i],
+                    'image_idx': image_idx, #      image_idx: object 所在样本下标
+                    'gt_idx': i,     #  gt_idx: object 属于该样本的第几个 object
+                    'box3d_lidar': gt_boxes_3d[i], #      group_id: object 属于该 group 里面的第几个 (也就是 list 的1-based index.)
                     'num_points_in_gt': gt_points.shape[0],
                     'difficulty': difficulty[i],
                 }

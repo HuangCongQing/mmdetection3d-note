@@ -8,8 +8,8 @@ from torch.utils.data import Dataset
 
 from mmdet.datasets import DATASETS
 from ..core.bbox import get_box_type
-from .pipelines import Compose
-from .utils import extract_result_dict, get_loading_pipeline
+from .pipelines import Compose #  self.pipeline = Compose(pipeline)
+from .utils import extract_result_dict, get_loading_pipeline # 
 
 
 @DATASETS.register_module()
@@ -43,13 +43,13 @@ class Custom3DDataset(Dataset):
     """
 
     def __init__(self,
-                 data_root,
-                 ann_file,
+                 data_root, # 数据集目录
+                 ann_file, # 标注文件目录
                  pipeline=None,
                  classes=None,
                  modality=None,
                  box_type_3d='LiDAR',
-                 filter_empty_gt=True,
+                 filter_empty_gt=True, #  Whether to filter empty GT.
                  test_mode=False):
         super().__init__()
         self.data_root = data_root
@@ -64,12 +64,12 @@ class Custom3DDataset(Dataset):
         self.data_infos = self.load_annotations(self.ann_file)
 
         if pipeline is not None:
-            self.pipeline = Compose(pipeline)
+            self.pipeline = Compose(pipeline) #  以 compose 的方式组合为一个函数，由 dataset 对数据预处理时调用：
 
         # set group flag for the sampler
         if not self.test_mode:
             self._set_group_flag()
-
+    # 下面会调用
     def load_annotations(self, ann_file):
         """Load annotations from ann_file.
 
@@ -80,7 +80,7 @@ class Custom3DDataset(Dataset):
             list[dict]: List of annotations.
         """
         return mmcv.load(ann_file)
-
+    # 1. 调用 get_data_info() 加载指定 img_idx 的 data info ， 组织为 input_dict .
     def get_data_info(self, index):
         """Get data info according to the given index.
 
@@ -96,22 +96,22 @@ class Custom3DDataset(Dataset):
                 - file_name (str): Filename of point clouds.
                 - ann_info (dict): Annotation info.
         """
-        info = self.data_infos[index]
-        sample_idx = info['point_cloud']['lidar_idx']
+        info = self.data_infos[index] #  self.data_infos = self.load_annotations(self.ann_file)
+        sample_idx = info['point_cloud']['lidar_idx'] # 下标
         pts_filename = osp.join(self.data_root, info['pts_path'])
 
         input_dict = dict(
-            pts_filename=pts_filename,
+            pts_filename=pts_filename, # 原始点云文件名
             sample_idx=sample_idx,
             file_name=pts_filename)
 
         if not self.test_mode:
-            annos = self.get_ann_info(index)
+            annos = self.get_ann_info(index) #    调用 get_anno_info() ，加载 anno 里面的 boxes，将 boxes 从原标签文件的 camera 坐标系转换到 lidar 坐标系
             input_dict['ann_info'] = annos
             if self.filter_empty_gt and ~(annos['gt_labels_3d'] != -1).any():
                 return None
-        return input_dict
-
+        return input_dict # 返回
+    # 2. 调用 pre_pipeline() ， 扩展 input_dict 包含的属性信息
     def pre_pipeline(self, results):
         """Initialization before data preparation.
 
@@ -147,7 +147,7 @@ class Custom3DDataset(Dataset):
         Returns:
             dict: Training data dict of the corresponding index.
         """
-        input_dict = self.get_data_info(index)
+        input_dict = self.get_data_info(index) # 
         if input_dict is None:
             return None
         self.pre_pipeline(input_dict)

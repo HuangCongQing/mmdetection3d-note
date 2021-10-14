@@ -41,6 +41,7 @@ class DefaultFormatBundle(object):
             dict: The result dict contains the data that is formatted with
                 default bundle.
         """
+        # 是否有图像
         if 'img' in results:
             if isinstance(results['img'], list):
                 # process multiple imgs in single frame
@@ -50,6 +51,7 @@ class DefaultFormatBundle(object):
             else:
                 img = np.ascontiguousarray(results['img'].transpose(2, 0, 1))
                 results['img'] = DC(to_tensor(img), stack=True)
+        # 遍历所有的key
         for key in [
                 'proposals', 'gt_bboxes', 'gt_bboxes_ignore', 'gt_labels',
                 'gt_labels_3d', 'attr_labels', 'pts_instance_mask',
@@ -147,10 +149,10 @@ class Collect3D(object):
         will be converted to :obj:`mmcv.DataContainer`.
 
         Args:
-            results (dict): Result dict contains the data to collect.
+            results (dict): Result dict contains the data to collect. # 包含所有
 
         Returns:
-            dict: The result dict contains the following keys
+            dict: The result dict contains the following keys # 拿到需要的
                 - keys in ``self.keys``
                 - ``img_metas``
         """
@@ -163,7 +165,7 @@ class Collect3D(object):
         data['img_metas'] = DC(img_metas, cpu_only=True)
         for key in self.keys:
             data[key] = results[key]
-        return data
+        return data # 返回
 
     def __repr__(self):
         """str: Return a string that describes the module."""
