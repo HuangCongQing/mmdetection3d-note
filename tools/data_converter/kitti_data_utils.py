@@ -351,7 +351,7 @@ def get_ouster_image_info(path,
     #处理单帧数据
     def map_func(idx):
         info = {}
-        pc_info = {'pc_idx': idx, 'num_features': 4} # 添加下标=======================================
+        pc_info = {'pc_idx': idx, 'num_features': 4} # 添加下标
         calib_info = {}
         image_info = {'image_idx': idx}
 
