@@ -23,19 +23,19 @@ def kitti_data_prep(root_path, info_prefix, version, out_dir):
         version (str): Dataset version.
         out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/kitti
     """
-    kitti.create_kitti_info_file(root_path, info_prefix) # 第一步 生成 4个pkl文件
-    kitti.create_reduced_point_cloud(root_path, info_prefix) # 生成压缩后的bin文件
-    # 4个pkl文件路径
-    info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
-    info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
-    info_trainval_path = osp.join(root_path,
-                                  f'{info_prefix}_infos_trainval.pkl')
-    info_test_path = osp.join(root_path, f'{info_prefix}_infos_test.pkl')
-    # 生成4个coco.json文件(得到2D的标注信息)
-    kitti.export_2d_annotation(root_path, info_train_path)
-    kitti.export_2d_annotation(root_path, info_val_path)
-    kitti.export_2d_annotation(root_path, info_trainval_path)
-    kitti.export_2d_annotation(root_path, info_test_path)
+    # kitti.create_kitti_info_file(root_path, info_prefix) # 第一步 生成 4个pkl文件
+    # kitti.create_reduced_point_cloud(root_path, info_prefix) # 生成压缩后的bin文件
+    # # 4个pkl文件路径作为下面 coco.json输入
+    # info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
+    # info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
+    # info_trainval_path = osp.join(root_path,
+    #                               f'{info_prefix}_infos_trainval.pkl')
+    # info_test_path = osp.join(root_path, f'{info_prefix}_infos_test.pkl')
+    # # 生成4个coco.json文件(得到2D的标注信息)
+    # kitti.export_2d_annotation(root_path, info_train_path)
+    # kitti.export_2d_annotation(root_path, info_val_path)
+    # kitti.export_2d_annotation(root_path, info_trainval_path)
+    # kitti.export_2d_annotation(root_path, info_test_path)
     # 创建gtbase
     create_groundtruth_database( # tools/data_converter/create_gt_database.py
         'KittiDataset', # mmdet3d/datasets/kitti_dataset.py

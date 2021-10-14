@@ -112,23 +112,25 @@ class OusterDataset(Custom3DDataset):
                 - ann_info (dict): Annotation info.
         """
         info = self.data_infos[index]
-        sample_idx = info['image']['image_idx'] # 报错
-        img_filename = os.path.join(self.data_root,
-                                    info['image']['image_path'])
+        # sample_idx = info['image']['image_idx'] # 报错
+        sample_idx = info['point_cloud']['pc_idx'] # 
+        # img_filename = os.path.join(self.data_root,
+        #                             info['image']['image_path'])
 
         # TODO: consider use torch.Tensor only
-        rect = info['calib']['R0_rect'].astype(np.float32)
-        Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
-        P2 = info['calib']['P2'].astype(np.float32)
-        lidar2img = P2 @ rect @ Trv2c
+        # rect = info['calib']['R0_rect'].astype(np.float32)
+        # Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
+        # P2 = info['calib']['P2'].astype(np.float32)
+        # lidar2img = P2 @ rect @ Trv2c
 
         pts_filename = self._get_pts_filename(sample_idx)
         input_dict = dict(
             sample_idx=sample_idx,
             pts_filename=pts_filename,
             img_prefix=None,
-            img_info=dict(filename=img_filename),
-            lidar2img=lidar2img)
+            # img_info=dict(filename=img_filename),
+            # lidar2img=lidar2img
+            )
 
         if not self.test_mode:
             annos = self.get_ann_info(index)
@@ -154,8 +156,8 @@ class OusterDataset(Custom3DDataset):
         """
         # Use index to get the annos, thus the evalhook could also use this api
         info = self.data_infos[index]
-        rect = info['calib']['R0_rect'].astype(np.float32)
-        Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
+        # rect = info['calib']['R0_rect'].astype(np.float32)
+        # Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
 
         annos = info['annos']
         # we need other objects to avoid collision when sample
@@ -168,8 +170,8 @@ class OusterDataset(Custom3DDataset):
                                       axis=1).astype(np.float32)
 
         # convert gt_bboxes_3d to velodyne coordinates  格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
-        gt_bboxes_3d = CameraInstance3DBoxes(gt_bboxes_3d).convert_to(
-            self.box_mode_3d, np.linalg.inv(rect @ Trv2c))
+        # gt_bboxes_3d = CameraInstance3DBoxes(gt_bboxes_3d).convert_to(
+        #     self.box_mode_3d, np.linalg.inv(rect @ Trv2c))
         gt_bboxes = annos['bbox']
 
         selected = self.drop_arrays_by_name(gt_names, ['DontCare'])

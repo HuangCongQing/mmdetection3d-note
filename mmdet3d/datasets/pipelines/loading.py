@@ -357,7 +357,7 @@ class LoadPointsFromFile(object):
     def __init__(self,
                  coord_type,
                  load_dim=6,
-                 use_dim=[0, 1, 2],
+                 use_dim=[0, 1, 2], # 点云的x,y,z
                  shift_height=False,
                  use_color=False,
                  file_client_args=dict(backend='disk')):
@@ -412,8 +412,8 @@ class LoadPointsFromFile(object):
         """
         pts_filename = results['pts_filename']
         points = self._load_points(pts_filename)
-        points = points.reshape(-1, self.load_dim)
-        points = points[:, self.use_dim]
+        points = points.reshape(-1, self.load_dim) # ValueError: cannot reshape array of size 461536 into shape (6)
+        points = points[:, self.use_dim] # 使用的维度
         attribute_dims = None
 
         if self.shift_height:
