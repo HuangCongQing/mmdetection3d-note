@@ -111,6 +111,7 @@ class OusterDataset(Custom3DDataset):
                     from lidar to different cameras.
                 - ann_info (dict): Annotation info.
         """
+        # {'point_cloud': {'pc_idx': 0, 'num_features': 4, 'velodyne_path': 'training/velodyne/000000.bin'}, 'annos': {'name': array(['Pedestrian'], dtype='<U10'), 'truncated': array([0.]), 'occluded': array([0]), 'alpha': array([-0.2]), 'bbox': array([[712.4 , 143.  , 810.73, 307.92]]), 'dimensions': array([[1.2 , 1.89, 0.48]]), 'location': array([[1.84, 1.47, 8.41]]), 'rotation_y': array([0.01]), 'score': array([0.]), 'index': array([0], dtype=int32), 'group_ids': array([0], dtype=int32), 'difficulty': array([0], dtype=int32)}}
         info = self.data_infos[index]
         # sample_idx = info['image']['image_idx'] # 报错
         sample_idx = info['point_cloud']['pc_idx'] # 
