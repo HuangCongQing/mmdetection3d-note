@@ -63,7 +63,7 @@ class PillarFeatureNet(nn.Module):
         self.fp16_enabled = False
         # Create PillarFeatureNet layers
         self.in_channels = in_channels #   in_channels=4+3+2 = 9,===================================
-        feat_channels = [in_channels] + list(feat_channels) # 
+        feat_channels = [in_channels] + list(feat_channels) # [9, 64]
         pfn_layers = []
         for i in range(len(feat_channels) - 1):
             in_filters = feat_channels[i]

@@ -82,7 +82,9 @@ class DefaultFormatBundle(object):
     def __repr__(self):
         return self.__class__.__name__
 
-
+#   Collect3D 把在 input_dict 里指定 meta_keys 组织到一起，放在新建的 img_meta 字段，
+# 即 result['img_meta'] = [input_dict[k] for k in meta_keys]
+#  kitti调用：dict(type='Collect3D', keys=['points', 'gt_bboxes_3d', 'gt_labels_3d']) 
 @PIPELINES.register_module()
 class Collect3D(object):
     """Collect data from the loader relevant to the specific task.
@@ -172,7 +174,7 @@ class Collect3D(object):
         return self.__class__.__name__ + \
             f'(keys={self.keys}, meta_keys={self.meta_keys})'
 
-
+# 针对3D 
 @PIPELINES.register_module()
 class DefaultFormatBundle3D(DefaultFormatBundle):
     """Default formatting bundle.

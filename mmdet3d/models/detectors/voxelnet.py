@@ -6,7 +6,7 @@ from torch.nn import functional as F
 from mmdet3d.core import bbox3d2result, merge_aug_bboxes_3d
 from mmdet3d.ops import Voxelization
 from mmdet.models import DETECTORS
-from .. import builder
+from .. import builder # mmdet3d/models/builder.py
 from .single_stage import SingleStage3DDetector
 
 
@@ -33,10 +33,10 @@ class VoxelNet(SingleStage3DDetector):
             test_cfg=test_cfg,
             init_cfg=init_cfg,
             pretrained=pretrained)
-        self.voxel_layer = Voxelization(**voxel_layer)
-        self.voxel_encoder = builder.build_voxel_encoder(voxel_encoder)
-        self.middle_encoder = builder.build_middle_encoder(middle_encoder)
-    # 提取特征
+        self.voxel_layer = Voxelization(**voxel_layer) # 
+        self.voxel_encoder = builder.build_voxel_encoder(voxel_encoder) # PillarFeatureNet.py
+        self.middle_encoder = builder.build_middle_encoder(middle_encoder) # PointPillarsScatter.py
+    # 提取特征（feature, backbone,neck）
     def extract_feat(self, points, img_metas=None):
         """Extract features from points."""
         voxels, num_points, coors = self.voxelize(points)
@@ -66,8 +66,8 @@ class VoxelNet(SingleStage3DDetector):
             coors_batch.append(coor_pad)
         coors_batch = torch.cat(coors_batch, dim=0)
         return voxels, num_points, coors_batch
-
-    def forward_train(self,
+    # 继承自mmdet3d/models/detectors/base.py中的forward中的forward_train()
+    def forward_train(self, 
                       points,
                       img_metas,
                       gt_bboxes_3d,
@@ -88,8 +88,8 @@ class VoxelNet(SingleStage3DDetector):
         Returns:
             dict: Losses of each branch.
         """
-        x = self.extract_feat(points, img_metas)
-        outs = self.bbox_head(x)
+        x = self.extract_feat(points, img_metas) # 提取特征（feature, backbone,neck）
+        outs = self.bbox_head(x) # 检测头
         loss_inputs = outs + (gt_bboxes_3d, gt_labels_3d, img_metas)
         losses = self.bbox_head.loss(
             *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)

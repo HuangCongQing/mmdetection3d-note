@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-10-14 16:52:03
+LastEditTime: 2021-10-14 18:27:55
 FilePath: /mmdetection3d/configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py
 '''
 _base_ = [
@@ -48,8 +48,8 @@ train_pipeline = [
     dict(type='PointsRangeFilter', point_cloud_range=point_cloud_range),
     dict(type='ObjectRangeFilter', point_cloud_range=point_cloud_range),
     dict(type='PointShuffle'),
-    dict(type='DefaultFormatBundle3D', class_names=class_names),
-    dict(type='Collect3D', keys=['points', 'gt_bboxes_3d', 'gt_labels_3d'])
+    dict(type='DefaultFormatBundle3D', class_names=class_names), # mmdet3d/datasets/pipelines/formating.py
+    dict(type='Collect3D', keys=['points', 'gt_bboxes_3d', 'gt_labels_3d']) # mmdet3d/datasets/pipelines/formating.py
 ]
 test_pipeline = [
     dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4),
