@@ -151,26 +151,23 @@ def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt
     #     content = []
     # else:
     content = [line.strip().split(' ') for line in lines] # GT内容
+    print(content)
     num_objects = len([x[0] for x in content if x[0] != 'DontCare']) # 除了Dontare，有多少类，这里是2类
     annotations['name'] = np.array([x[0] for x in content]) # 第一列：['Car' 'Van' 'DontCare' 'DontCare' 'DontCare']
     num_gt = len(annotations['name'])
-    annotations['truncated'] = np.array([float(x[1]) for x in content])
-    annotations['occluded'] = np.array([int(x[2]) for x in content])
-    annotations['alpha'] = np.array([float(x[3]) for x in content])
-    annotations['bbox'] = np.array([[float(info) for info in x[4:8]]
-                                    for x in content]).reshape(-1, 4)
-    # dimensions will convert hwl format to standard lhw(camera) format.
-    annotations['dimensions'] = np.array([[float(info) for info in x[8:11]] # 第9-11列: 2.85 2.63 12.34 表示该车的高度，宽度，和长度，单位为米。（H,W,L）
-                                          for x in content
-                                          ]).reshape(-1, 3)[:, [2, 0, 1]]
-    annotations['location'] = np.array([[float(info) for info in x[11:14]] # 该车的3D中心在相机坐标下的xyz坐标
+    annotations['location'] = np.array([[float(info) for info in x[1:4]] # 中心xyz坐标
                                         for x in content]).reshape(-1, 3)
-    annotations['rotation_y'] = np.array([float(x[14]) # 表示车体朝向，绕相机坐标系y轴的弧度值
+    annotations['dimensions'] = np.array([[float(info) for info in x[4:7]] #  表示该车的高度，宽度，和长度，单位为米。（H,W,L）
+                                          for x in content
+                                          ]).reshape(-1, 3)[:, [0, 2, 1]] # 长宽高位置--> 长度 高度，宽度？？？？
+    annotations['rotation_y'] = np.array([float(x[7]) # 表示车体朝向，绕相机坐标系y轴的弧度值
                                           for x in content]).reshape(-1)
-    if len(content) != 0 and len(content[0]) == 16:  # have score #  (预测有score，但label_2标签文件不包含score)
-        annotations['score'] = np.array([float(x[15]) for x in content])
+    # 如果有第9列置信度
+    print(len(content[0]))
+    if len(content) != 0 and len(content[0]) == 9:  # have score #  (预测有score，但label_2标签文件不包含score)
+        annotations['score'] = np.array([float(x[8]) for x in content])
     else:
-        annotations['score'] = np.zeros((annotations['bbox'].shape[0], ))
+        annotations['score'] = np.zeros((annotations['rotation_y'].shape[0], ))
     index = list(range(num_objects)) + [-1] * (num_gt - num_objects) # [0, 1, -1, -1, -1] = [0,1 ] +  [-1, -1, -1]
     annotations['index'] = np.array(index, dtype=np.int32)
     annotations['group_ids'] = np.arange(num_gt, dtype=np.int32) # [0 1 2 3 4]
@@ -306,7 +303,7 @@ def get_kitti_image_info(path,
 
     return list(image_infos) # 返回
 
-# ouster主函数!!!!!!
+# ouster主函数!!!!!! include    get_label_anno_ouster(label_path)====================================================================
 def get_ouster_image_info(path,
                          training=True,
                          label_info=True, # label_info 必须
@@ -374,55 +371,55 @@ def get_ouster_image_info(path,
             annotations = get_label_anno_ouster(label_path) # GT数据=====================================================最重要
         # info['image'] = image_info # 图像信息
         info['point_cloud'] = pc_info # 点云数据
-        if calib:
-            calib_path = get_calib_path(
-                idx, path, training, relative_path=False)
-            with open(calib_path, 'r') as f:
-                lines = f.readlines()
-            P0 = np.array([float(info) for info in lines[0].split(' ')[1:13]
-                           ]).reshape([3, 4])
-            P1 = np.array([float(info) for info in lines[1].split(' ')[1:13]
-                           ]).reshape([3, 4])
-            P2 = np.array([float(info) for info in lines[2].split(' ')[1:13]
-                           ]).reshape([3, 4])
-            P3 = np.array([float(info) for info in lines[3].split(' ')[1:13]
-                           ]).reshape([3, 4])
-            if extend_matrix:
-                P0 = _extend_matrix(P0)
-                P1 = _extend_matrix(P1)
-                P2 = _extend_matrix(P2)
-                P3 = _extend_matrix(P3)
-            R0_rect = np.array([
-                float(info) for info in lines[4].split(' ')[1:10]
-            ]).reshape([3, 3])
-            if extend_matrix:
-                rect_4x4 = np.zeros([4, 4], dtype=R0_rect.dtype)
-                rect_4x4[3, 3] = 1.
-                rect_4x4[:3, :3] = R0_rect
-            else:
-                rect_4x4 = R0_rect
-
-            Tr_velo_to_cam = np.array([
-                float(info) for info in lines[5].split(' ')[1:13]
-            ]).reshape([3, 4])
-            Tr_imu_to_velo = np.array([
-                float(info) for info in lines[6].split(' ')[1:13]
-            ]).reshape([3, 4])
-            if extend_matrix:
-                Tr_velo_to_cam = _extend_matrix(Tr_velo_to_cam)
-                Tr_imu_to_velo = _extend_matrix(Tr_imu_to_velo)
-            calib_info['P0'] = P0
-            calib_info['P1'] = P1
-            calib_info['P2'] = P2
-            calib_info['P3'] = P3
-            calib_info['R0_rect'] = rect_4x4
-            calib_info['Tr_velo_to_cam'] = Tr_velo_to_cam
-            calib_info['Tr_imu_to_velo'] = Tr_imu_to_velo
-            info['calib'] = calib_info
+        # if calib:
+        #     calib_path = get_calib_path(
+        #         idx, path, training, relative_path=False)
+        #     with open(calib_path, 'r') as f:
+        #         lines = f.readlines()
+        #     P0 = np.array([float(info) for info in lines[0].split(' ')[1:13]
+        #                    ]).reshape([3, 4])
+        #     P1 = np.array([float(info) for info in lines[1].split(' ')[1:13]
+        #                    ]).reshape([3, 4])
+        #     P2 = np.array([float(info) for info in lines[2].split(' ')[1:13]
+        #                    ]).reshape([3, 4])
+        #     P3 = np.array([float(info) for info in lines[3].split(' ')[1:13]
+        #                    ]).reshape([3, 4])
+        #     if extend_matrix:
+        #         P0 = _extend_matrix(P0)
+        #         P1 = _extend_matrix(P1)
+        #         P2 = _extend_matrix(P2)
+        #         P3 = _extend_matrix(P3)
+        #     R0_rect = np.array([
+        #         float(info) for info in lines[4].split(' ')[1:10]
+        #     ]).reshape([3, 3])
+        #     if extend_matrix:
+        #         rect_4x4 = np.zeros([4, 4], dtype=R0_rect.dtype)
+        #         rect_4x4[3, 3] = 1.
+        #         rect_4x4[:3, :3] = R0_rect
+        #     else:
+        #         rect_4x4 = R0_rect
+        #
+        #     Tr_velo_to_cam = np.array([
+        #         float(info) for info in lines[5].split(' ')[1:13]
+        #     ]).reshape([3, 4])
+        #     Tr_imu_to_velo = np.array([
+        #         float(info) for info in lines[6].split(' ')[1:13]
+        #     ]).reshape([3, 4])
+        #     if extend_matrix:
+        #         Tr_velo_to_cam = _extend_matrix(Tr_velo_to_cam)
+        #         Tr_imu_to_velo = _extend_matrix(Tr_imu_to_velo)
+        #     calib_info['P0'] = P0
+        #     calib_info['P1'] = P1
+        #     calib_info['P2'] = P2
+        #     calib_info['P3'] = P3
+        #     calib_info['R0_rect'] = rect_4x4
+        #     calib_info['Tr_velo_to_cam'] = Tr_velo_to_cam
+        #     calib_info['Tr_imu_to_velo'] = Tr_imu_to_velo
+        #     info['calib'] = calib_info
 
         if annotations is not None: 
             info['annos'] = annotations
-            add_difficulty_to_annos(info)
+            # add_difficulty_to_annos(info) #
         return info # 返回info
 
     with futures.ThreadPoolExecutor(num_worker) as executor:
@@ -568,7 +565,7 @@ def get_waymo_image_info(path,
         if annotations is not None:
             info['annos'] = annotations
             info['annos']['camera_id'] = info['annos'].pop('score')
-            add_difficulty_to_annos(info)
+            add_difficulty_to_annos(info) # waymo
 
         sweeps = []
         prev_idx = idx
@@ -609,7 +606,6 @@ def get_waymo_image_info(path,
 
     return list(image_infos)
 
-
 def kitti_anno_to_label_file(annos, folder):
     folder = Path(folder)
     for anno in annos:
@@ -632,7 +628,7 @@ def kitti_anno_to_label_file(annos, folder):
         with open(label_file, 'w') as f:
             f.write(label_str)
 
-
+# 添加annos['difficulty']   用于gt数据库增强
 def add_difficulty_to_annos(info):
     min_height = [40, 25,
                   25]  # minimum height for evaluated groundtruth/detections
@@ -645,7 +641,7 @@ def add_difficulty_to_annos(info):
     annos = info['annos']
     dims = annos['dimensions']  # lhw format
     bbox = annos['bbox']
-    height = bbox[:, 3] - bbox[:, 1]
+    height = bbox[:, 3] - bbox[:, 1] # 使用到了bbox
     occlusion = annos['occluded']
     truncation = annos['truncated']
     diff = []

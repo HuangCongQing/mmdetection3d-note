@@ -213,14 +213,14 @@ def ouster_data_prep(root_path, info_prefix, version, out_dir):
     # kitti.export_2d_annotation(root_path, info_trainval_path)
     # kitti.export_2d_annotation(root_path, info_test_path)
     # 创建gtbase
-    create_groundtruth_database( # tools/data_converter/create_gt_database.py
-        'OusterDataset',
-        root_path,
-        info_prefix,
-        f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl
-        relative_path=False,
-        mask_anno_path='instances_train.json',
-        with_mask=(version == 'mask'))
+    # create_groundtruth_database( # tools/data_converter/create_gt_database.py
+    #     'OusterDataset',
+    #     root_path,
+    #     info_prefix,
+    #     f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl
+    #     relative_path=False,
+    #     mask_anno_path='instances_train.json',
+    #     with_mask=(version == 'mask'))
 # =============================================================================================
 
 parser = argparse.ArgumentParser(description='Data converter arg parser')

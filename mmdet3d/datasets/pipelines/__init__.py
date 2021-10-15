@@ -7,7 +7,7 @@ from .loading import (LoadAnnotations3D, LoadImageFromFileMono3D,
                       LoadPointsFromMultiSweeps, NormalizePointsColor,
                       PointSegClassMapping)
 from .test_time_aug import MultiScaleFlipAug3D
-from .transforms_3d import (BackgroundPointsFilter, GlobalAlignment,
+from .transforms_3d import (BackgroundPointsFilter, GlobalAlignment, # transforms_3d.py
                             GlobalRotScaleTrans, IndoorPatchPointSample,
                             IndoorPointSample, ObjectNameFilter, ObjectNoise,
                             ObjectRangeFilter, ObjectSample, PointSample,

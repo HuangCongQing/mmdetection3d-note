@@ -50,8 +50,9 @@ class OusterDataset(Custom3DDataset):
         pcd_limit_range (list): The range of point cloud used to filter
             invalid predicted boxes. Default: [0, -40, -3, 70.4, 40, 0.0].
     """
-    CLASSES = ('car', 'pedestrian', 'cyclist')
-
+    CLASSES = ('car', 'pedestrian', 'cyclist') #
+    # CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
+    # 修改=============================================================================
     def __init__(self,
                  data_root,
                  ann_file,
@@ -113,6 +114,8 @@ class OusterDataset(Custom3DDataset):
         """
         # {'point_cloud': {'pc_idx': 0, 'num_features': 4, 'velodyne_path': 'training/velodyne/000000.bin'}, 'annos': {'name': array(['Pedestrian'], dtype='<U10'), 'truncated': array([0.]), 'occluded': array([0]), 'alpha': array([-0.2]), 'bbox': array([[712.4 , 143.  , 810.73, 307.92]]), 'dimensions': array([[1.2 , 1.89, 0.48]]), 'location': array([[1.84, 1.47, 8.41]]), 'rotation_y': array([0.01]), 'score': array([0.]), 'index': array([0], dtype=int32), 'group_ids': array([0], dtype=int32), 'difficulty': array([0], dtype=int32)}}
         info = self.data_infos[index]
+
+        # 修改=============================================================================
         # sample_idx = info['image']['image_idx'] # 报错
         sample_idx = info['point_cloud']['pc_idx'] # 
         # img_filename = os.path.join(self.data_root,
@@ -139,6 +142,7 @@ class OusterDataset(Custom3DDataset):
 
         return input_dict
     #   调用 get_anno_info() ，加载 anno 里面的 boxes， 格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
+    # 需要修改gt_bboxes_3d和gt_labels_3d=====================================
     def get_ann_info(self, index):
         """Get annotation info according to the given index.
 
@@ -150,7 +154,7 @@ class OusterDataset(Custom3DDataset):
 
                 - gt_bboxes_3d (:obj:`LiDARInstance3DBoxes`): \
                     3D ground truth bboxes.
-                - gt_labels_3d (np.ndarray): Labels of ground truths.
+                - gt_labels_3d (np.ndarray): Labels of ground truths.====================================================================
                 - gt_bboxes (np.ndarray): 2D ground truth bboxes.
                 - gt_labels (np.ndarray): Labels of ground truths.
                 - gt_names (list[str]): Class names of ground truths.
@@ -162,20 +166,21 @@ class OusterDataset(Custom3DDataset):
 
         annos = info['annos']
         # we need other objects to avoid collision when sample
-        annos = self.remove_dontcare(annos)
+        # annos = self.remove_dontcare(annos)
         loc = annos['location']
         dims = annos['dimensions']
         rots = annos['rotation_y']
         gt_names = annos['name']
         gt_bboxes_3d = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1).astype(np.float32)
-
+        # 修改
+        gt_bboxes_3d = LiDARInstance3DBoxes(gt_bboxes_3d) # ====================================================================
         # convert gt_bboxes_3d to velodyne coordinates  格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
         # gt_bboxes_3d = CameraInstance3DBoxes(gt_bboxes_3d).convert_to(
         #     self.box_mode_3d, np.linalg.inv(rect @ Trv2c))
         gt_bboxes = annos['bbox']
 
-        selected = self.drop_arrays_by_name(gt_names, ['DontCare'])
+        selected = self.drop_arrays_by_name(gt_names, ['DontCare']) # 不要DonCare
         gt_bboxes = gt_bboxes[selected].astype('float32')
         gt_names = gt_names[selected]
 
@@ -186,7 +191,7 @@ class OusterDataset(Custom3DDataset):
             else:
                 gt_labels.append(-1)
         gt_labels = np.array(gt_labels).astype(np.int64)
-        gt_labels_3d = copy.deepcopy(gt_labels)
+        gt_labels_3d = copy.deepcopy(gt_labels) # gt_labels_3d和gt_labels是一样的==================================
 
         anns_results = dict(
             gt_bboxes_3d=gt_bboxes_3d,
@@ -240,7 +245,7 @@ class OusterDataset(Custom3DDataset):
         ]
         for key in ann_info.keys():
             img_filtered_annotations[key] = (
-                ann_info[key][relevant_annotation_indices])
+                ann_info[key][relevant_annotation_indices]) # TypeError: list indices must be integers or slices, not list
         return img_filtered_annotations
 
     def format_results(self,
@@ -310,7 +315,7 @@ class OusterDataset(Custom3DDataset):
         """Evaluation in KITTI protocol.
 
         Args:
-            results (list[dict]): Testing results of the dataset.
+            results (list[dict]): Testing results of the dataset.数据结果
             metric (str | list[str]): Metrics to be evaluated.
             logger (logging.Logger | str | None): Logger used for printing
                 related information during evaluation. Default: None.
@@ -329,8 +334,8 @@ class OusterDataset(Custom3DDataset):
         Returns:
             dict[str, float]: Results of each evaluation metric.
         """
-        result_files, tmp_dir = self.format_results(results, pklfile_prefix)
-        from mmdet3d.core.evaluation import kitti_eval
+        result_files, tmp_dir = self.format_results(results, pklfile_prefix)  # 
+        from mmdet3d.core.evaluation import kitti_eval # 评测
         gt_annos = [info['annos'] for info in self.data_infos]
 
         if isinstance(result_files, dict):
@@ -351,7 +356,7 @@ class OusterDataset(Custom3DDataset):
                     f'Results of {name}:\n' + ap_result_str, logger=logger)
 
         else:
-            if metric == 'img_bbox':
+            if metric == 'img_bbox': # 
                 ap_result_str, ap_dict = kitti_eval(
                     gt_annos, result_files, self.CLASSES, eval_types=['bbox'])
             else:
@@ -364,7 +369,7 @@ class OusterDataset(Custom3DDataset):
         if show:
             self.show(results, out_dir, pipeline=pipeline)
         return ap_dict
-
+    # 报错位置
     def bbox2result_kitti(self,
                           net_outputs,
                           class_names,
@@ -394,7 +399,8 @@ class OusterDataset(Custom3DDataset):
                 mmcv.track_iter_progress(net_outputs)):
             annos = []
             info = self.data_infos[idx]
-            sample_idx = info['image']['image_idx']
+            # sample_idx = info['image']['image_idx'] # 报错# KeyError: 'image'
+            sample_idx = info['point_cloud']['pc_idx'] #
             image_shape = info['image']['image_shape'][:2]
             box_dict = self.convert_valid_bboxes(pred_dicts, info)
             anno = {

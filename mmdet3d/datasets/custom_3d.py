@@ -222,7 +222,7 @@ class Custom3DDataset(Dataset):
             out = f'{pklfile_prefix}.pkl'
         mmcv.dump(outputs, out)
         return outputs, tmp_dir
-
+    # 评测
     def evaluate(self,
                  results,
                  metric=None,

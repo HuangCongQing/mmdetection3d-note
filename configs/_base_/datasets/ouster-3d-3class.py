@@ -2,6 +2,7 @@
 dataset_type = 'OusterDataset' # # 数据集类型  mmdet3d/datasets/ouster_dataset.py
 data_root = 'data/ouster/' # # 数据路径
 class_names = ['Pedestrian', 'Cyclist', 'Car'] # 类的名称
+    # CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
 point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 input_modality = dict(use_lidar=True, use_camera=False)
 # db_sampler = dict( # mmdet3d/datasets/pipelines/dbsampler.py
@@ -109,7 +110,8 @@ data = dict(
             data_root=data_root, # data_root = 'data/ouster/'
             ann_file=data_root + 'ouster_infos_train.pkl',
             split='training',
-            pts_prefix='velodyne_reduced',
+            # pts_prefix='velodyne_reduced', # 点云数据
+            pts_prefix='velodyne', # 点云数据
             pipeline=train_pipeline, # # 流水线，这里传入的就是上面创建的训练流水线变量 train_pipeline = [] 上面有配置文件 
             modality=input_modality,
             classes=class_names, # 类别名称
@@ -122,7 +124,7 @@ data = dict(
         data_root=data_root,
         ann_file=data_root + 'ouster_infos_val.pkl',
         split='training',
-        pts_prefix='velodyne_reduced',
+        pts_prefix='velodyne',
         pipeline=test_pipeline,
         modality=input_modality,
         classes=class_names,
@@ -133,7 +135,7 @@ data = dict(
         data_root=data_root,
         ann_file=data_root + 'ouster_infos_val.pkl',
         split='training',
-        pts_prefix='velodyne_reduced',
+        pts_prefix='velodyne',
         pipeline=test_pipeline,
         modality=input_modality,
         classes=class_names,
