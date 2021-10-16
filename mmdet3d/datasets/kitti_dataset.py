@@ -295,6 +295,7 @@ class KittiDataset(Custom3DDataset):
                                                   submission_prefix)
         return result_files, tmp_dir
 
+    # 评测（继承）
     def evaluate(self,
                  results,
                  metric=None,

@@ -143,8 +143,8 @@ class Collect3D(object):
                             'img_norm_cfg', 'pcd_trans', 'sample_idx',
                             'pcd_scale_factor', 'pcd_rotation', 'pts_filename',
                             'transformation_3d_flow')):
-        self.keys = keys
-        self.meta_keys = meta_keys
+        self.keys = keys # ['points', 'gt_bboxes_3d', 'gt_labels_3d']
+        self.meta_keys = meta_keys # ('filename', 'ori_shape', 'img_shape', 'lidar2img', 'depth2img', 'cam2img', 'pad_shape', 'scale_factor', 'flip', 'pcd_horizontal_flip', 'pcd_vertical_flip', 'box_mode_3d', 'box_type_3d', 'img_norm_cfg', 'pcd_trans', 'sample_idx', 'pcd_scale_factor', 'pcd_rotation', 'pts_filename', 'transformation_3d_flow')
 
     def __call__(self, results):
         """Call function to collect keys in results. The keys in ``meta_keys``
@@ -157,17 +157,37 @@ class Collect3D(object):
             dict: The result dict contains the following keys # 拿到需要的
                 - keys in ``self.keys``
                 - ``img_metas``
+            四类数据：[,img_metas, points,  gt_bboxes_3d, gt_labels_3d]
+            {'img_metas': DataContainer({'flip': True, 'pcd_horizontal_flip': True, 'pcd_vertical_flip': False, 'box_mode_3d': <Box3DMode.LIDAR: 0>, 'box_type_3d': <class 'mmdet3d.core.bbox.structures.lidar_box3d.LiDARInstance3DBoxes'>, 'pcd_trans': array([0., 0., 0.]), 'sample_idx': 0, 'pcd_scale_factor': 0.9755108328567383, 'pcd_rotation': tensor([[ 0.8918, -0.4525,  0.0000],
+                                    [ 0.4525,  0.8918,  0.0000],
+                                    [ 0.0000,  0.0000,  1.0000]]), 'pts_filename': 'data/ouster/training/velodyne/000000.bin', 'transformation_3d_flow': ['HF', 'R', 'S', 'T']}),
+                'points': DataContainer(tensor([[ 13.9746,  -3.8809,   0.6946,   0.0000],
+                                    [ 11.6087, -10.1146,  -0.5746,   0.1600],
+                                    [  3.6164,   5.8245,   0.2712,   0.4500],
+                                    ...,
+                                    [  4.7382, -17.3289,  -1.3482,   0.2800],
+                                    [  7.3649,  -5.7480,  -1.5355,   0.3300],
+                                    [ 15.3399,   3.4207,  -0.7746,   0.0000]])),
+                'gt_bboxes_3d': DataContainer(LiDARInstance3DBoxes(
+                                    tensor([[26.8357,  0.2091, -0.1128, 12.1986,  7.3476,  8.1358, -1.5886],
+                                        [59.5087, 18.4029, -0.2075, 16.3024,  6.8092,  3.8243, -3.0755],
+                                        [15.7184,  1.7017, -2.4298,  0.3473,  1.6000,  0.2331, -3.1182],
+                                        [16.1132, -0.4547, -2.6482,  0.5299,  1.7283,  0.4474,  3.0312],
+                                        [40.1020, 31.2460, -3.1966,  4.3630,  1.4925,  0.4469,  2.5913],
+                                        [47.9474, 25.2452, -0.2658,  8.2713,  5.7078,  6.3748,  0.9467]]))),
+                'gt_labels_3d': DataContainer(tensor([-1, -1,  0,  0,  2, -1]))
+            }
         """
         data = {}
-        img_metas = {}
+        img_metas = {} # ('filename', 'ori_shape', 'img_shape', 'lidar2img', 'depth2img', 'cam2img', 'pad_shape', 'scale_factor', 'flip', 'pcd_horizontal_flip', 'pcd_vertical_flip', 'box_mode_3d', 'box_type_3d', 'img_norm_cfg', 'pcd_trans', 'sample_idx', 'pcd_scale_factor', 'pcd_rotation', 'pts_filename', 'transformation_3d_flow')
         for key in self.meta_keys:
             if key in results:
                 img_metas[key] = results[key]
 
         data['img_metas'] = DC(img_metas, cpu_only=True)
-        for key in self.keys:
+        for key in self.keys: # ['points', 'gt_bboxes_3d', 'gt_labels_3d']
             data[key] = results[key]
-        return data # 返回
+        return data # 返回[,img_metas, points,  gt_bboxes_3d, gt_labels_3d]
 
     def __repr__(self):
         """str: Return a string that describes the module."""

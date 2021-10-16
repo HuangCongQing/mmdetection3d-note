@@ -25,60 +25,96 @@ def get_thresholds(scores: np.ndarray, num_gt, num_sample_pts=41):
         current_recall += 1 / (num_sample_pts - 1.0)
     return thresholds
 
-
+# #这个函数是处理一帧的数据, current_class是6个类别中的其中一类 current_class =1（pedestrian）
 def clean_data(gt_anno, dt_anno, current_class, difficulty):
-    CLASS_NAMES = ['car', 'pedestrian', 'cyclist']
-    MIN_HEIGHT = [40, 25, 25]
-    MAX_OCCLUSION = [0, 1, 2]
-    MAX_TRUNCATION = [0.15, 0.3, 0.5]
-    dc_bboxes, ignored_gt, ignored_dt = [], [], []
-    current_cls_name = CLASS_NAMES[current_class].lower()
-    num_gt = len(gt_anno['name'])
+    '''
+        print("____________clean_data() args:________________")
+        print('current_class  :  ',current_class)
+        print('difficulty : ',difficulty)
+            ____________clean_data() args:________________
+            current_class  :   0
+            difficulty :  0
+    '''
+    CLASS_NAMES = ['car', 'pedestrian', 'cyclist'] # #类别
+    #检测难度从易到难，为了检测到同样数目的gt，使最小值减小，最大值增大
+    # MIN_HEIGHT = [40, 25, 25] #高度
+    # MAX_OCCLUSION = [0, 1, 2]  #遮挡
+    # MAX_TRUNCATION = [0.15, 0.3, 0.5] #截断
+    dc_bboxes, ignored_gt = [], []
+    current_cls_name = CLASS_NAMES[current_class].lower() # 'pedestrian'  
+
+    # 获取当前帧中物体object的个数
+    num_gt = len(gt_anno['name'])  #gt数量
     num_dt = len(dt_anno['name'])
     num_valid_gt = 0
+
+    #对num_gt中每一个物体object：
+    #对num_gt中每一个物体object：
     for i in range(num_gt):
-        bbox = gt_anno['bbox'][i]
-        gt_name = gt_anno['name'][i].lower()
-        height = bbox[3] - bbox[1]
+
+        #获取这个物体的name，并小写
+        gt_name = gt_anno["name"][i].lower()
+
         valid_class = -1
+
+        # 如果该物体正好是 需要处理的当前的object，将valid_class值为 1
         if (gt_name == current_cls_name):
             valid_class = 1
-        elif (current_cls_name == 'Pedestrian'.lower()
-              and 'Person_sitting'.lower() == gt_name):
-            valid_class = 0
-        elif (current_cls_name == 'Car'.lower() and 'Van'.lower() == gt_name):
-            valid_class = 0
         else:
             valid_class = -1
+        
         ignore = False
-        if ((gt_anno['occluded'][i] > MAX_OCCLUSION[difficulty])
-                or (gt_anno['truncated'][i] > MAX_TRUNCATION[difficulty])
-                or (height <= MIN_HEIGHT[difficulty])):
-            ignore = True
         if valid_class == 1 and not ignore:
+            # 如果 为有效的物体， 且该物体object不忽略，
+            # 则ignored_gt上该值为0，有效的物体数num_valid_gt+1
             ignored_gt.append(0)
             num_valid_gt += 1
-        elif (valid_class == 0 or (ignore and (valid_class == 1))):
-            ignored_gt.append(1)
         else:
             ignored_gt.append(-1)
-    # for i in range(num_gt):
-        if gt_anno['name'][i] == 'DontCare':
-            dc_bboxes.append(gt_anno['bbox'][i])
+
+    #对num_dt中每一个物体object：
     for i in range(num_dt):
-        if (dt_anno['name'][i].lower() == current_cls_name):
+        if (dt_anno["name"][i].lower() == current_cls_name):
             valid_class = 1
         else:
             valid_class = -1
-        height = abs(dt_anno['bbox'][i, 3] - dt_anno['bbox'][i, 1])
-        if height < MIN_HEIGHT[difficulty]:
-            ignored_dt.append(1)
-        elif valid_class == 1:
+
+        if valid_class == 1:
             ignored_dt.append(0)
         else:
             ignored_dt.append(-1)
+    
+    '''
+        print("__________num_valid_gt____________")
+        print(num_valid_gt)
+        print("__________ignored_gt____________")
+        print(ignored_gt)
+        print("__________ignored_dt____________")
+        print(ignored_dt)
+    
+        该函数的输出结果是
+            __________num_valid_gt____________
+            76
+            __________ignored_gt____________
+            [0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, -1, 
+            -1, -1, -1, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, -1, 0, 0, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, -1, 0, -1, -1, -1, -1, -1, 0, 0,
+            0, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, 0, -1, 0, 0, -1, -1, -1, -1, 0, -1, -1, -1, 0, 0, -1]
+            __________ignored_dt____________
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, -1, -1, 0, -1, 0, 0, -1, -1,
+            0, 0, 0, -1, -1, -1, -1, -1, 0, 0, -1, -1, 0, 0, 0, -1, 0, 0, 0, -1, 
+            -1, -1, -1, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 
+            0, -1, -1, 0, 0, -1, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, 0, -1, -1, -1, 0, -1, -1, -1, 0, -1, 0, -1, -1, -1, 0, 
+            0, 0, -1, -1, -1, -1, -1, 0, -1, 0, -1, 0, 0, -1, -1, -1, -1, -1, -1]
+    '''
 
-    return num_valid_gt, ignored_gt, ignored_dt, dc_bboxes
+    return num_valid_gt, ignored_gt, ignored_dt
 
 
 @numba.jit(nopython=True)
@@ -319,16 +355,17 @@ def fused_compute_statistics(overlaps,
             dontcare = dontcares[dc_num:dc_num + dc_nums[i]]
             tp, fp, fn, similarity, _ = compute_statistics_jit(
                 overlap,
-                gt_data,
-                dt_data,
-                ignored_gt,
-                ignored_det,
+                gt_data, # # N x 5阵列
+                dt_data, # N x 6阵列
+                ignored_gt,# 长度N数组，-1、0、1
+                ignored_det,# 长度N数组，-1、0、1
                 dontcare,
                 metric,
                 min_overlap=min_overlap,
                 thresh=thresh,
                 compute_fp=True,
                 compute_aos=compute_aos)
+
             pr[t, 0] += tp
             pr[t, 1] += fp
             pr[t, 2] += fn
@@ -338,7 +375,7 @@ def fused_compute_statistics(overlaps,
         dt_num += dt_nums[i]
         dc_num += dc_nums[i]
 
-# 计算iou
+# 计算iou（elif metric == 2:）
 def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50):
     """Fast iou algorithm. this function can be used independently to do result
     analysis. Must be used in CAMERA coordinate system.
@@ -353,7 +390,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50):
     total_dt_num = np.stack([len(a['name']) for a in dt_annos], 0)
     total_gt_num = np.stack([len(a['name']) for a in gt_annos], 0)
     num_examples = len(gt_annos)
-    split_parts = get_split_parts(num_examples, num_parts)
+    split_parts = get_split_parts(num_examples, num_parts) # 
     parted_overlaps = []
     example_idx = 0
 
@@ -381,7 +418,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50):
                                       axis=1)
             overlap_part = bev_box_overlap(gt_boxes,
                                            dt_boxes).astype(np.float64)
-        elif metric == 2: #:  2: 3d.========================================================
+        elif metric == 2: #:  2: 3d.=======================================================
             loc = np.concatenate([a['location'] for a in gt_annos_part], 0)
             dims = np.concatenate([a['dimensions'] for a in gt_annos_part], 0)
             rots = np.concatenate([a['rotation_y'] for a in gt_annos_part], 0)
@@ -393,7 +430,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50):
             dt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1)
             overlap_part = d3_box_overlap(gt_boxes,
-                                          dt_boxes).astype(np.float64)
+                                          dt_boxes).astype(np.float64) # 计算=============================
         else:
             raise ValueError('unknown metric')
         parted_overlaps.append(overlap_part)
@@ -416,34 +453,60 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50):
 
     return overlaps, parted_overlaps, total_gt_num, total_dt_num
 
-
+# 准备数据????图像
 def _prepare_data(gt_annos, dt_annos, current_class, difficulty):
+    # # 数据初始化
     gt_datas_list = []
     dt_datas_list = []
     total_dc_num = []
     ignored_gts, ignored_dets, dontcares = [], [], []
     total_num_valid_gt = 0
+    # 遍历每个图像
     for i in range(len(gt_annos)):
-        rets = clean_data(gt_annos[i], dt_annos[i], current_class, difficulty)
-        num_valid_gt, ignored_gt, ignored_det, dc_bboxes = rets
+        #得到的是参数，当前帧的这个类别的 有效物体数，和有效物体的索引列表
+        rets = clean_data(gt_annos[i], dt_annos[i], current_class, difficulty) # 函数的调用======================================
+        num_valid_gt, ignored_gt, ignored_det = rets # 得到结果
         ignored_gts.append(np.array(ignored_gt, dtype=np.int64))
         ignored_dets.append(np.array(ignored_det, dtype=np.int64))
+        #! 最终形成ignored_gts的List
         if len(dc_bboxes) == 0:
             dc_bboxes = np.zeros((0, 4)).astype(np.float64)
+            #! dc_boxes 是一个np array，形状(该图像中的don't care boxes 数量, 4)
         else:
             dc_bboxes = np.stack(dc_bboxes, 0).astype(np.float64)
+            #! 每一列是一个Don't Care bbox
         total_dc_num.append(dc_bboxes.shape[0])
+        #! don't care boxes的数量. total_dc_num是该图像dc_boxes数量的list，每个图像对应一个total_dc_num
         dontcares.append(dc_bboxes)
-        total_num_valid_gt += num_valid_gt
+        #! 该图像的dc_boxes list的list
+        total_num_valid_gt += num_valid_gt # #! 有效 gt boxes 总数的计数器
+
         gt_datas = np.concatenate(
-            [gt_annos[i]['bbox'], gt_annos[i]['alpha'][..., np.newaxis]], 1)
+            [gt_annos[i]['bbox'],  # #! bbox index 形状是 N x 4
+            gt_annos[i]['alpha'][..., np.newaxis]], 1) #! alpha index 形状是 N -> 当np.newaxis, 是 N x 1
+        #! 所以合并后成为 N x 5 ，5表示 [x1, y1, x2, y2, alpha]
         dt_datas = np.concatenate([
             dt_annos[i]['bbox'], dt_annos[i]['alpha'][..., np.newaxis],
             dt_annos[i]['score'][..., np.newaxis]
         ], 1)
+        #! 类似的, 形状为N x 6， 6是 [x1, y1, x2, y2, alpha, score]
         gt_datas_list.append(gt_datas)
         dt_datas_list.append(dt_datas)
-    total_dc_num = np.stack(total_dc_num, axis=0)
+        # boxes list 的 list
+        # gt_datas只和gt_annos[i]有关，dt_datas只和dt_annos[i]有关
+        # 因此每个图像对应一个gt_datas_list和dt_datas_list
+
+    total_dc_num = np.stack(total_dc_num, axis=0) # don't care boxes 数量
+    '''
+   此处的所有数组的长度 = 数据集中的图像数量
+   gt_datas_list：list（N x 5个数组）
+   dt_datas_list：list（N x 6个数组）
+   ignore_gts：list（长度为N的数组（值-1、0或1））
+   ignore_dets ：list（长度为N的数组（值-1、0或1））
+   dontcares：list（（图像x 4个数组中的无关框数量）
+   total_dc_num：list（图像值中的无关框数量）
+   total_num_valid_gt：有效gt的总数（int）
+   '''
     return (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, dontcares,
             total_dc_num, total_num_valid_gt)
 
@@ -452,7 +515,7 @@ def eval_class(gt_annos,
                dt_annos,
                current_classes,
                difficultys,
-               metric, #  2: 3d =
+               metric, #  2: 3d
                min_overlaps,
                compute_aos=False,
                num_parts=200):
@@ -477,7 +540,7 @@ def eval_class(gt_annos,
         num_parts = num_examples
     split_parts = get_split_parts(num_examples, num_parts)
 
-    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 计算iou
+    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 计算iou=======================================
     overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
     N_SAMPLE_PTS = 41
     num_minoverlap = len(min_overlaps)
@@ -488,15 +551,17 @@ def eval_class(gt_annos,
     recall = np.zeros(
         [num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
     aos = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
+    # 每个类别
     for m, current_class in enumerate(current_classes):
+        # 每个难度
         for idx_l, difficulty in enumerate(difficultys):
-            rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty) # 准备数据
+            rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty) # 准备数据==================================================
             (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets,
              dontcares, total_dc_num, total_num_valid_gt) = rets
             for k, min_overlap in enumerate(min_overlaps[:, metric, m]):
                 thresholdss = []
                 for i in range(len(gt_annos)):
-                    rets = compute_statistics_jit(
+                    rets = compute_statistics_jit( # 计算====================================
                         overlaps[i],
                         gt_datas_list[i],
                         dt_datas_list[i],
@@ -589,7 +654,7 @@ def do_eval(gt_annos,
             dt_annos,
             current_classes,
             min_overlaps,
-            eval_types=['bbox', 'bev', '3d']):
+            eval_types=['3d']): # 修改      # eval_types=['bbox', 'bev', '3d']):
     # min_overlaps: [num_minoverlap, metric, num_class]
     difficultys = [0, 1, 2]
     mAP_bbox = None
@@ -641,13 +706,13 @@ def do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges,
         mAP_aos = mAP_aos.mean(-1)
     return mAP_bbox, mAP_bev, mAP_3d, mAP_aos
 
-# 评测开始 入口=====================================
-def kitti_eval(gt_annos,
+# 评测开始 入口=================================================================================================================
+def ouster_eval(gt_annos,
                dt_annos,
-               current_classes,
-               eval_types=['bbox', 'bev', '3d']):
+               current_classes, #预测的类别
+               eval_types=[ '3d']):# 只要3D
+            #    eval_types=['bbox', 'bev', '3d']):# 只要3D
     """KITTI evaluation.
-
     Args:
         gt_annos (list[dict]): Contain gt information of each sample.
         dt_annos (list[dict]): Contain detected information of each sample.
@@ -668,7 +733,7 @@ def kitti_eval(gt_annos,
                             [0.5, 0.25, 0.25, 0.5, 0.25],
                             [0.5, 0.25, 0.25, 0.5, 0.25]])
     min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
-    class_to_name = { # 分类标签
+    class_to_name = { # 分类标签修改
         0: 'Car',
         1: 'Pedestrian',
         2: 'Cyclist',
@@ -691,23 +756,24 @@ def kitti_eval(gt_annos,
     compute_aos = False
     pred_alpha = False
     valid_alpha_gt = False
-    for anno in dt_annos: # 遍历每个预测
-        mask = (anno['alpha'] != -10)
-        if anno['alpha'][mask].shape[0] != 0:
-            pred_alpha = True
-            break
-    for anno in gt_annos:  # 遍历每个GT
-        if anno['alpha'][0] != -10:
-            valid_alpha_gt = True # 合法
-            break
-    compute_aos = (pred_alpha and valid_alpha_gt)
-    if compute_aos:
-        eval_types.append('aos') # 是否添加aos
-
-    mAPbbox, mAPbev, mAP3d, mAPaos = do_eval(gt_annos, dt_annos,
+    # for anno in dt_annos: # 遍历每个预测
+    #     mask = (anno['alpha'] != -10)
+    #     if anno['alpha'][mask].shape[0] != 0:
+    #         pred_alpha = True
+    #         break
+    # for anno in gt_annos:  # 遍历每个GT
+    #     if anno['alpha'][0] != -10:
+    #         valid_alpha_gt = True # 合法
+    #         break
+    # compute_aos = (pred_alpha and valid_alpha_gt)
+    # if compute_aos:
+    #     eval_types.append('aos') # 是否添加aos！！！！
+    
+    # 计算结果的函数do_eval()（后面详细说）
+    mAPbbox, mAPbev, mAP3d, mAPaos = do_eval(gt_annos, dt_annos, # 调用============================================
                                              current_classes, min_overlaps,
                                              eval_types)
-
+    #打印结果
     ret_dict = {}
     difficulty = ['easy', 'moderate', 'hard']
     for j, curcls in enumerate(current_classes):

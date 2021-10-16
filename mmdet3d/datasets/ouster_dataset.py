@@ -138,7 +138,7 @@ class OusterDataset(Custom3DDataset):
 
         if not self.test_mode:
             annos = self.get_ann_info(index)
-            input_dict['ann_info'] = annos
+            input_dict['ann_info'] = annos # =======！！！！
 
         return input_dict
     #   调用 get_anno_info() ，加载 anno 里面的 boxes， 格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
@@ -171,6 +171,7 @@ class OusterDataset(Custom3DDataset):
         dims = annos['dimensions']
         rots = annos['rotation_y']
         gt_names = annos['name']
+        # 组合成(x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
         gt_bboxes_3d = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1).astype(np.float32)
         # 修改
@@ -180,9 +181,9 @@ class OusterDataset(Custom3DDataset):
         #     self.box_mode_3d, np.linalg.inv(rect @ Trv2c))
         gt_bboxes = annos['bbox']
 
-        selected = self.drop_arrays_by_name(gt_names, ['DontCare']) # 不要DonCare
-        gt_bboxes = gt_bboxes[selected].astype('float32')
-        gt_names = gt_names[selected]
+        # selected = self.drop_arrays_by_name(gt_names, ['DontCare']) # 不要DonCare
+        # gt_bboxes = gt_bboxes[selected].astype('float32')
+        # gt_names = gt_names[selected]
 
         gt_labels = []
         for cat in gt_names:
@@ -275,13 +276,13 @@ class OusterDataset(Custom3DDataset):
         else:
             tmp_dir = None
 
-        if not isinstance(outputs[0], dict):
-            result_files = self.bbox2result_kitti2d(outputs, self.CLASSES,
+        if not isinstance(outputs[0], dict): #  #outputs[0]:  [boxes_3d,scores_3d,labels_3d]
+            result_files = self.bbox2result_kitti2d(outputs, self.CLASSES, #===================================================
                                                     pklfile_prefix,
                                                     submission_prefix)
-        elif 'pts_bbox' in outputs[0] or 'img_bbox' in outputs[0]:
+        elif 'pts_bbox' in outputs[0] or 'img_bbox' in outputs[0]: # 不执行
             result_files = dict()
-            for name in outputs[0]:
+            for name in outputs[0]: #  # [boxes_3d,scores_3d,labels_3d]
                 results_ = [out[name] for out in outputs]
                 pklfile_prefix_ = pklfile_prefix + name
                 if submission_prefix is not None:
@@ -297,26 +298,26 @@ class OusterDataset(Custom3DDataset):
                         results_, self.CLASSES, pklfile_prefix_,
                         submission_prefix_)
                 result_files[name] = result_files_
-        else:
-            result_files = self.bbox2result_kitti(outputs, self.CLASSES,
+        else:#从这执行========
+            result_files = self.bbox2result_kitti(outputs, self.CLASSES, #从这执行===================================================
                                                   pklfile_prefix,
                                                   submission_prefix)
         return result_files, tmp_dir
-
+    # 评测（继承mmdet3d/datasets/custom_3d.py）====================
     def evaluate(self,
-                 results,
-                 metric=None,
+                 results, # ['boxes_3d', 'scores_3d', 'labels_3d']
+                 metric=None, # None
                  logger=None,
-                 pklfile_prefix=None,
+                 pklfile_prefix=None, # 提交结果是ture
                  submission_prefix=None,
                  show=False,
                  out_dir=None,
-                 pipeline=None):
+                 pipeline=None): # pipeline：【'LoadPointsFromFile'，'DefaultFormatBundle3D'，'Collect3D' 】
         """Evaluation in KITTI protocol.
 
         Args:
             results (list[dict]): Testing results of the dataset.数据结果
-            metric (str | list[str]): Metrics to be evaluated.
+            metric (str | list[str]): Metrics to be evaluated. 被评测的标准
             logger (logging.Logger | str | None): Logger used for printing
                 related information during evaluation. Default: None.
             pklfile_prefix (str | None): The prefix of pkl files. It includes
@@ -334,17 +335,19 @@ class OusterDataset(Custom3DDataset):
         Returns:
             dict[str, float]: Results of each evaluation metric.
         """
-        result_files, tmp_dir = self.format_results(results, pklfile_prefix)  # 
-        from mmdet3d.core.evaluation import kitti_eval # 评测
-        gt_annos = [info['annos'] for info in self.data_infos]
+        result_files, tmp_dir = self.format_results(results, pklfile_prefix)  # ===========================================================================
+
+        from mmdet3d.core.evaluation import kitti_eval, ouster_eval# mmdet3d/core/evaluation/kitti_utils/eval.py 评测=================================================
+        gt_annos = [info['annos'] for info in self.data_infos] # 得到GT
 
         if isinstance(result_files, dict):
             ap_dict = dict()
-            for name, result_files_ in result_files.items():
-                eval_types = ['bbox', 'bev', '3d']
+            for name, result_files_ in result_files.items(): # for循环 遍历
+                # eval_types = ['bbox', 'bev', '3d'] # 只要3D就行
+                eval_types = [ '3d'] # 只要3D就行====================================
                 if 'img' in name:
                     eval_types = ['bbox']
-                ap_result_str, ap_dict_ = kitti_eval(
+                ap_result_str, ap_dict_ = ouster_eval( # 开始评测的入口 ，调用 mmdet3d/core/evaluation/kitti_utils/eval.py
                     gt_annos,
                     result_files_,
                     self.CLASSES,
@@ -354,13 +357,12 @@ class OusterDataset(Custom3DDataset):
 
                 print_log(
                     f'Results of {name}:\n' + ap_result_str, logger=logger)
-
         else:
             if metric == 'img_bbox': # 
-                ap_result_str, ap_dict = kitti_eval(
+                ap_result_str, ap_dict = ouster_eval(
                     gt_annos, result_files, self.CLASSES, eval_types=['bbox'])
             else:
-                ap_result_str, ap_dict = kitti_eval(gt_annos, result_files,
+                ap_result_str, ap_dict = ouster_eval(gt_annos, result_files,
                                                     self.CLASSES)
             print_log('\n' + ap_result_str, logger=logger)
 
@@ -369,7 +371,7 @@ class OusterDataset(Custom3DDataset):
         if show:
             self.show(results, out_dir, pipeline=pipeline)
         return ap_dict
-    # 报错位置
+    #转换成3D 结果===================================================================
     def bbox2result_kitti(self,
                           net_outputs,
                           class_names,
@@ -394,47 +396,59 @@ class OusterDataset(Custom3DDataset):
             mmcv.mkdir_or_exist(submission_prefix)
 
         det_annos = []
-        print('\nConverting prediction to KITTI format')
+        print('\nConverting prediction to KITTI format【将预测结果转化为kitti格式ouster_dataset.py】')
         for idx, pred_dicts in enumerate(
                 mmcv.track_iter_progress(net_outputs)):
             annos = []
-            info = self.data_infos[idx]
+            info = self.data_infos[idx] # 两类数据： ['point_cloud','annos']
             # sample_idx = info['image']['image_idx'] # 报错# KeyError: 'image'
             sample_idx = info['point_cloud']['pc_idx'] #
-            image_shape = info['image']['image_shape'][:2]
-            box_dict = self.convert_valid_bboxes(pred_dicts, info)
+            # image_shape = info['image']['image_shape'][:2]
+
+            # box_dict = self.convert_valid_bboxes(pred_dicts, info) # 转化为合法的bboxes，和相机对比？？？  预测结果======================================================
+            box_dict = self.convert_type(pred_dicts, info) # 转化为合法的bboxes， 预测结果======================================================
+            """ 
+                # bbox=box_2d_preds[valid_inds, :].numpy(),  不需要
+                # box3d_camera=box_preds_camera[valid_inds].tensor.numpy(),  不需要
+                 box3d_lidar=box_preds[valid_inds].tensor.numpy(),
+                scores=scores[valid_inds].numpy(),
+                label_preds=labels[valid_inds].numpy(),
+                sample_idx=sample_idx)
+            
+             """
             anno = {
                 'name': [],
-                'truncated': [],
-                'occluded': [],
-                'alpha': [],
-                'bbox': [],
+                # 'truncated': [],
+                # 'occluded': [],
+                # 'alpha': [],
+                # 'bbox': [],
                 'dimensions': [],
                 'location': [],
                 'rotation_y': [],
                 'score': []
             }
-            if len(box_dict['bbox']) > 0:
-                box_2d_preds = box_dict['bbox']
-                box_preds = box_dict['box3d_camera']
+            # if len(box_dict['bbox']) > 0: # 有目标修改
+            if len(box_dict['box3d_lidar']) > 0: # 有目标
+                # box_2d_preds = box_dict['bbox']
+                # box_preds = box_dict['box3d_camera']
                 scores = box_dict['scores']
                 box_preds_lidar = box_dict['box3d_lidar']
                 label_preds = box_dict['label_preds']
 
-                for box, box_lidar, bbox, score, label in zip(
-                        box_preds, box_preds_lidar, box_2d_preds, scores,
+                for  box_lidar, score, label in zip(
+                        box_preds_lidar, scores,
                         label_preds):
-                    bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
-                    bbox[:2] = np.maximum(bbox[:2], [0, 0])
+                    # bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
+                    # bbox[:2] = np.maximum(bbox[:2], [0, 0])
                     anno['name'].append(class_names[int(label)])
-                    anno['truncated'].append(0.0)
-                    anno['occluded'].append(0)
-                    anno['alpha'].append(
-                        -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6])
-                    anno['bbox'].append(bbox)
-                    anno['dimensions'].append(box[3:6])
-                    anno['location'].append(box[:3])
-                    anno['rotation_y'].append(box[6])
+                    # anno['truncated'].append(0.0)
+                    # anno['occluded'].append(0)
+                    # anno['alpha'].append(
+                    #     -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6]) # 卡车中心与相机中心构成的矢量与在bird view下的夹角
+                    # anno['bbox'].append(bbox)
+                    anno['dimensions'].append(box_lidar[3:6]) # 长宽高  ，convert_type
+                    anno['location'].append(box_lidar[:3]) # 中心点
+                    anno['rotation_y'].append(box_lidar[6])
                     anno['score'].append(score)
 
                 anno = {k: np.stack(v) for k, v in anno.items()}
@@ -442,11 +456,11 @@ class OusterDataset(Custom3DDataset):
             else:
                 anno = {
                     'name': np.array([]),
-                    'truncated': np.array([]),
-                    'occluded': np.array([]),
-                    'alpha': np.array([]),
-                    'bbox': np.zeros([0, 4]),
-                    'dimensions': np.zeros([0, 3]),
+                    # 'truncated': np.array([]),
+                    # 'occluded': np.array([]),
+                    # 'alpha': np.array([]),
+                    # 'bbox': np.zeros([0, 4]),
+                    'dimensions': np.zeros([0, 3]), # array([], shape=(0, 3), dtype=float64)
                     'location': np.zeros([0, 3]),
                     'rotation_y': np.array([]),
                     'score': np.array([]),
@@ -454,7 +468,7 @@ class OusterDataset(Custom3DDataset):
                 annos.append(anno)
 
             if submission_prefix is not None:
-                curr_file = f'{submission_prefix}/{sample_idx:06d}.txt'
+                curr_file = f'{submission_prefix}/{sample_idx:06d}.txt' # 
                 with open(curr_file, 'w') as f:
                     bbox = anno['bbox']
                     loc = anno['location']
@@ -476,7 +490,7 @@ class OusterDataset(Custom3DDataset):
             annos[-1]['sample_idx'] = np.array(
                 [sample_idx] * len(annos[-1]['score']), dtype=np.int64)
 
-            det_annos += annos
+            det_annos += annos # 返回结果
 
         if pklfile_prefix is not None:
             if not pklfile_prefix.endswith(('.pkl', '.pickle')):
@@ -485,7 +499,7 @@ class OusterDataset(Custom3DDataset):
             print(f'Result is saved to {out}.')
 
         return det_annos
-
+    # 转换成2D 检测结果
     def bbox2result_kitti2d(self,
                             net_outputs,
                             class_names,
@@ -597,7 +611,101 @@ class OusterDataset(Custom3DDataset):
             print(f'Result is saved to {submission_prefix}')
 
         return det_annos
+    # numpy和tensor转换
+    def convert_type(self, box_dict, info):
+        """Convert the predicted boxes into valid ones.
 
+        Args:
+            box_dict (dict): Box dictionaries to be converted.
+
+                - boxes_3d (:obj:`LiDARInstance3DBoxes`): 3D bounding boxes.
+                - scores_3d (torch.Tensor): Scores of boxes.
+                - labels_3d (torch.Tensor): Class labels of boxes.
+            info (dict): Data info.
+
+        Returns:
+            dict: Valid predicted boxes.
+
+                - bbox (np.ndarray): 2D bounding boxes. # 不需要
+                - box3d_camera (np.ndarray): 3D bounding boxes in \
+                    camera coordinate. #不需要
+                - box3d_lidar (np.ndarray): 3D bounding boxes in \
+                    LiDAR coordinate. # 需要
+                - scores (np.ndarray): Scores of boxes.# 需要
+                - label_preds (np.ndarray): Class label predictions. # 需要
+                - sample_idx (int): Sample index.
+        """
+
+        # TODO: refactor this function
+        box_preds = box_dict['boxes_3d'] # 7维
+        scores = box_dict['scores_3d'] # 1维度
+        labels = box_dict['labels_3d'] # label结果
+        # sample_idx = info['image']['image_idx']
+        sample_idx = info['point_cloud']['pc_idx'] # GT
+        # TODO: remove the hack of yaw
+        box_preds.tensor[:, -1] = box_preds.tensor[:, -1] - np.pi # 最后一列
+        box_preds.limit_yaw(offset=0.5, period=np.pi * 2) # self.tensor[:, 6]
+
+        if len(box_preds) == 0: # 直接返回0
+            return dict(
+                # bbox=np.zeros([0, 4]),
+                # box3d_camera=np.zeros([0, 7]),
+                box3d_lidar=np.zeros([0, 7]),
+                scores=np.zeros([0]),
+                label_preds=np.zeros([0, 4]),
+                sample_idx=sample_idx)
+        # # 2D 结果转换
+        # rect = info['calib']['R0_rect'].astype(np.float32)
+        # Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
+        # P2 = info['calib']['P2'].astype(np.float32)
+        # img_shape = info['image']['image_shape']
+        # P2 = box_preds.tensor.new_tensor(P2)
+
+        # box_preds_camera = box_preds.convert_to(Box3DMode.CAM, rect @ Trv2c)
+
+        # box_corners = box_preds_camera.corners
+        # box_corners_in_image = points_cam2img(box_corners, P2)
+        # # box_corners_in_image: [N, 8, 2]
+        # minxy = torch.min(box_corners_in_image, dim=1)[0]
+        # maxxy = torch.max(box_corners_in_image, dim=1)[0]
+        # box_2d_preds = torch.cat([minxy, maxxy], dim=1)
+        # # Post-processing   后处理
+        # # check box_preds_camera    相机处理
+        # image_shape = box_preds.tensor.new_tensor(img_shape)
+        # valid_cam_inds = ((box_2d_preds[:, 0] < image_shape[1]) &
+        #                   (box_2d_preds[:, 1] < image_shape[0]) &
+        #                   (box_2d_preds[:, 2] > 0) & (box_2d_preds[:, 3] > 0))
+        # # check box_preds
+        # limit_range = box_preds.tensor.new_tensor(self.pcd_limit_range)
+        # valid_pcd_inds = ((box_preds.center > limit_range[:3]) &
+        #                   (box_preds.center < limit_range[3:]))
+        # valid_inds = valid_cam_inds & valid_pcd_inds.all(-1) # 得到合法的结果进行判断=========================================
+        return dict(
+            # bbox=box_2d_preds[valid_inds, :].numpy(),
+            # box3d_camera=box_preds_camera[valid_inds].tensor.numpy(),
+            box3d_lidar=box_preds.tensor.numpy(),
+            scores=scores.numpy(),
+            label_preds=labels.numpy(),
+            sample_idx=sample_idx)
+
+        # if valid_inds.sum() > 0: # 合法
+        #     return dict(
+        #         # bbox=box_2d_preds[valid_inds, :].numpy(),
+        #         # box3d_camera=box_preds_camera[valid_inds].tensor.numpy(),
+        #         box3d_lidar=box_preds[valid_inds].tensor.numpy(),
+        #         scores=scores[valid_inds].numpy(),
+        #         label_preds=labels[valid_inds].numpy(),
+        #         sample_idx=sample_idx)
+        # else:
+        #     return dict(
+        #         # bbox=np.zeros([0, 4]),
+        #         # box3d_camera=np.zeros([0, 7]),
+        #         box3d_lidar=np.zeros([0, 7]),
+        #         scores=np.zeros([0]),
+        #         label_preds=np.zeros([0, 4]),
+        #         sample_idx=sample_idx)
+
+    # 雷达和相机对比得到合法的预测结果
     def convert_valid_bboxes(self, box_dict, info):
         """Convert the predicted boxes into valid ones.
 
@@ -612,25 +720,26 @@ class OusterDataset(Custom3DDataset):
         Returns:
             dict: Valid predicted boxes.
 
-                - bbox (np.ndarray): 2D bounding boxes.
+                - bbox (np.ndarray): 2D bounding boxes. # 不需要
                 - box3d_camera (np.ndarray): 3D bounding boxes in \
-                    camera coordinate.
+                    camera coordinate. #不需要
                 - box3d_lidar (np.ndarray): 3D bounding boxes in \
-                    LiDAR coordinate.
-                - scores (np.ndarray): Scores of boxes.
-                - label_preds (np.ndarray): Class label predictions.
+                    LiDAR coordinate. # 需要
+                - scores (np.ndarray): Scores of boxes.# 需要
+                - label_preds (np.ndarray): Class label predictions. # 需要
                 - sample_idx (int): Sample index.
         """
         # TODO: refactor this function
         box_preds = box_dict['boxes_3d']
         scores = box_dict['scores_3d']
-        labels = box_dict['labels_3d']
-        sample_idx = info['image']['image_idx']
+        labels = box_dict['labels_3d'] # label结果
+        # sample_idx = info['image']['image_idx']
+        sample_idx = info['point_cloud']['pc_idx'] #
         # TODO: remove the hack of yaw
         box_preds.tensor[:, -1] = box_preds.tensor[:, -1] - np.pi
         box_preds.limit_yaw(offset=0.5, period=np.pi * 2)
 
-        if len(box_preds) == 0:
+        if len(box_preds) == 0: # 直接返回0
             return dict(
                 bbox=np.zeros([0, 4]),
                 box3d_camera=np.zeros([0, 7]),
@@ -638,7 +747,7 @@ class OusterDataset(Custom3DDataset):
                 scores=np.zeros([0]),
                 label_preds=np.zeros([0, 4]),
                 sample_idx=sample_idx)
-
+        # 2D 结果转换
         rect = info['calib']['R0_rect'].astype(np.float32)
         Trv2c = info['calib']['Tr_velo_to_cam'].astype(np.float32)
         P2 = info['calib']['P2'].astype(np.float32)
@@ -653,8 +762,8 @@ class OusterDataset(Custom3DDataset):
         minxy = torch.min(box_corners_in_image, dim=1)[0]
         maxxy = torch.max(box_corners_in_image, dim=1)[0]
         box_2d_preds = torch.cat([minxy, maxxy], dim=1)
-        # Post-processing
-        # check box_preds_camera
+        # Post-processing   后处理
+        # check box_preds_camera    相机处理
         image_shape = box_preds.tensor.new_tensor(img_shape)
         valid_cam_inds = ((box_2d_preds[:, 0] < image_shape[1]) &
                           (box_2d_preds[:, 1] < image_shape[0]) &
@@ -663,20 +772,20 @@ class OusterDataset(Custom3DDataset):
         limit_range = box_preds.tensor.new_tensor(self.pcd_limit_range)
         valid_pcd_inds = ((box_preds.center > limit_range[:3]) &
                           (box_preds.center < limit_range[3:]))
-        valid_inds = valid_cam_inds & valid_pcd_inds.all(-1)
+        valid_inds = valid_cam_inds & valid_pcd_inds.all(-1) # 得到合法的结果
 
-        if valid_inds.sum() > 0:
+        if valid_inds.sum() > 0: # 合法
             return dict(
-                bbox=box_2d_preds[valid_inds, :].numpy(),
-                box3d_camera=box_preds_camera[valid_inds].tensor.numpy(),
+                # bbox=box_2d_preds[valid_inds, :].numpy(),
+                # box3d_camera=box_preds_camera[valid_inds].tensor.numpy(),
                 box3d_lidar=box_preds[valid_inds].tensor.numpy(),
                 scores=scores[valid_inds].numpy(),
                 label_preds=labels[valid_inds].numpy(),
                 sample_idx=sample_idx)
         else:
             return dict(
-                bbox=np.zeros([0, 4]),
-                box3d_camera=np.zeros([0, 7]),
+                # bbox=np.zeros([0, 4]),
+                # box3d_camera=np.zeros([0, 7]),
                 box3d_lidar=np.zeros([0, 7]),
                 scores=np.zeros([0]),
                 label_preds=np.zeros([0, 4]),
@@ -700,7 +809,7 @@ class OusterDataset(Custom3DDataset):
         if self.modality['use_camera']:
             pipeline.insert(0, dict(type='LoadImageFromFile'))
         return Compose(pipeline)
-
+    # 可视化
     def show(self, results, out_dir, show=True, pipeline=None):
         """Results visualization.
 
