@@ -614,7 +614,7 @@ class KittiDataset(Custom3DDataset):
                 - sample_idx (int): Sample index.
         """
         # TODO: refactor this function
-        box_preds = box_dict['boxes_3d']
+        box_preds = box_dict['boxes_3d'] #  box3d_lidar=============================================
         scores = box_dict['scores_3d']
         labels = box_dict['labels_3d']
         sample_idx = info['image']['image_idx']
@@ -637,7 +637,7 @@ class KittiDataset(Custom3DDataset):
         img_shape = info['image']['image_shape']
         P2 = box_preds.tensor.new_tensor(P2)
 
-        box_preds_camera = box_preds.convert_to(Box3DMode.CAM, rect @ Trv2c)
+        box_preds_camera = box_preds.convert_to(Box3DMode.CAM, rect @ Trv2c) # box3d_lidar转box_preds_camera
 
         box_corners = box_preds_camera.corners
         box_corners_in_image = points_cam2img(box_corners, P2)

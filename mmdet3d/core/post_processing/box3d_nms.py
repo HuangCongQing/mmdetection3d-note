@@ -42,7 +42,7 @@ def box3d_multiclass_nms(mlvl_bboxes,
     """
     # do multi class nms
     # the fg class id range: [0, num_classes-1]
-    num_classes = mlvl_scores.shape[1] - 1
+    num_classes = mlvl_scores.shape[1] - 1 # 3
     bboxes = []
     scores = []
     labels = []
@@ -51,7 +51,7 @@ def box3d_multiclass_nms(mlvl_bboxes,
     bboxes2d = []
     for i in range(0, num_classes):
         # get bboxes and scores of this class
-        cls_inds = mlvl_scores[:, i] > score_thr
+        cls_inds = mlvl_scores[:, i] > 0# score_thr # 修改为0========================================================
         if not cls_inds.any():
             continue
 
@@ -82,7 +82,7 @@ def box3d_multiclass_nms(mlvl_bboxes,
             _mlvl_bboxes2d = mlvl_bboxes2d[cls_inds]
             bboxes2d.append(_mlvl_bboxes2d[selected])
 
-    if bboxes:
+    if bboxes: # 0
         bboxes = torch.cat(bboxes, dim=0)
         scores = torch.cat(scores, dim=0)
         labels = torch.cat(labels, dim=0)
@@ -104,7 +104,7 @@ def box3d_multiclass_nms(mlvl_bboxes,
                 attr_scores = attr_scores[inds]
             if mlvl_bboxes2d is not None:
                 bboxes2d = bboxes2d[inds]
-    else:
+    else: #
         bboxes = mlvl_scores.new_zeros((0, mlvl_bboxes.size(-1)))
         scores = mlvl_scores.new_zeros((0, ))
         labels = mlvl_scores.new_zeros((0, ), dtype=torch.long)

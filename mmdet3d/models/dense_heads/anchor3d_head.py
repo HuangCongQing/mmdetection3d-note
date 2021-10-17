@@ -166,7 +166,8 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             tuple[list[torch.Tensor]]: Multi-level class score, bbox \
                 and direction predictions.
         """
-        return multi_apply(self.forward_single, feats) # multi_apply函数
+        ans =  multi_apply(self.forward_single, feats)
+        return ans # multi_apply函数
 
     def get_anchors(self, featmap_sizes, input_metas, device='cuda'):
         """Get anchors according to feature map sizes.
@@ -499,7 +500,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             mlvl_scores = torch.cat([mlvl_scores, padding], dim=1)
 
         score_thr = cfg.get('score_thr', 0)
-        results = box3d_multiclass_nms(mlvl_bboxes, mlvl_bboxes_for_nms,
+        results = box3d_multiclass_nms(mlvl_bboxes, mlvl_bboxes_for_nms, #==================================================================================
                                        mlvl_scores, score_thr, cfg.max_num,
                                        cfg, mlvl_dir_scores)
         bboxes, scores, labels, dir_scores = results
@@ -509,5 +510,5 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             bboxes[..., 6] = (
                 dir_rot + self.dir_offset +
                 np.pi * dir_scores.to(bboxes.dtype))
-        bboxes = input_meta['box_type_3d'](bboxes, box_dim=self.box_code_size)
+        bboxes = input_meta['box_type_3d'](bboxes, box_dim=self.box_code_size) #
         return bboxes, scores, labels

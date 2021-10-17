@@ -358,7 +358,7 @@ class Custom3DDataset(Dataset):
             if data is None:
                 idx = self._rand_another(idx)
                 continue
-            return data
+            return data # 数据=====
 
     def _set_group_flag(self):
         """Set flag according to image aspect ratio.

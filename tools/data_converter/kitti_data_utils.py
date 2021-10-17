@@ -88,7 +88,7 @@ def get_pose_path(idx,
     return get_kitti_info_path(idx, prefix, 'pose', '.txt', training,
                                relative_path, exist_check, use_prefix_id)
 
-# GT数据===========================================================
+# kitt的GT数据===========================================================
 def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
     annotations = {}
     annotations.update({
@@ -137,10 +137,10 @@ def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt
     annotations = {}
     annotations.update({
         'name': [],
-        'truncated': [],
-        'occluded': [],
-        'alpha': [],
-        'bbox': [],
+        # 'truncated': [],
+        # 'occluded': [],
+        # 'alpha': [],
+        # 'bbox': [],
         'dimensions': [],
         'location': [],
         'rotation_y': []

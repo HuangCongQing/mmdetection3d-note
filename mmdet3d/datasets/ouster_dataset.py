@@ -155,8 +155,8 @@ class OusterDataset(Custom3DDataset):
                 - gt_bboxes_3d (:obj:`LiDARInstance3DBoxes`): \
                     3D ground truth bboxes.
                 - gt_labels_3d (np.ndarray): Labels of ground truths.====================================================================
-                - gt_bboxes (np.ndarray): 2D ground truth bboxes.
-                - gt_labels (np.ndarray): Labels of ground truths.
+                - gt_bboxes (np.ndarray): 2D ground truth bboxes. # 不用
+                - gt_labels (np.ndarray): Labels of ground truths. # 不用
                 - gt_names (list[str]): Class names of ground truths.
         """
         # Use index to get the annos, thus the evalhook could also use this api
@@ -175,30 +175,32 @@ class OusterDataset(Custom3DDataset):
         gt_bboxes_3d = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1).astype(np.float32)
         # 修改
-        gt_bboxes_3d = LiDARInstance3DBoxes(gt_bboxes_3d) # ====================================================================
+        # 雷达坐标系：https://mmdetection3d.readthedocs.io/zh_CN/latest/api.html#mmdet3d.core.bbox.LiDARInstance3DBoxes
+        # LiDARInstance3DBoxes(tensor, box_dim=7, with_yaw=True, origin=(0.5, 0.5, 0))
+        gt_bboxes_3d = LiDARInstance3DBoxes(gt_bboxes_3d, origin=(0.5, 0.5, 0)).convert_to(self.box_mode_3d) # ====================================================================
         # convert gt_bboxes_3d to velodyne coordinates  格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
+        # 参考：https://mmdetection3d.readthedocs.io/zh_CN/latest/api.html#mmdet3d.core.bbox.CameraInstance3DBoxes
         # gt_bboxes_3d = CameraInstance3DBoxes(gt_bboxes_3d).convert_to(
         #     self.box_mode_3d, np.linalg.inv(rect @ Trv2c))
-        gt_bboxes = annos['bbox']
-
+        # gt_bboxes = annos['bbox']
         # selected = self.drop_arrays_by_name(gt_names, ['DontCare']) # 不要DonCare
         # gt_bboxes = gt_bboxes[selected].astype('float32')
         # gt_names = gt_names[selected]
 
-        gt_labels = []
+
+        gt_labels_3d = []
         for cat in gt_names:
             if cat in self.CLASSES:
-                gt_labels.append(self.CLASSES.index(cat))
+                gt_labels_3d.append(self.CLASSES.index(cat))
             else:
-                gt_labels.append(-1)
-        gt_labels = np.array(gt_labels).astype(np.int64)
-        gt_labels_3d = copy.deepcopy(gt_labels) # gt_labels_3d和gt_labels是一样的==================================
+                gt_labels_3d.append(-1)
+        gt_labels_3d = np.array(gt_labels_3d).astype(np.int64)
 
         anns_results = dict(
             gt_bboxes_3d=gt_bboxes_3d,
             gt_labels_3d=gt_labels_3d,
-            bboxes=gt_bboxes,
-            labels=gt_labels,
+            # bboxes=gt_bboxes,
+            # labels=gt_labels,
             gt_names=gt_names)
         return anns_results
 
@@ -305,7 +307,7 @@ class OusterDataset(Custom3DDataset):
         return result_files, tmp_dir
     # 评测（继承mmdet3d/datasets/custom_3d.py）====================
     def evaluate(self,
-                 results, # ['boxes_3d', 'scores_3d', 'labels_3d']
+                 results, # ['boxes_3d', 'scores_3d', 'labels_3d']  5个文件bin文件list就是{list:5}
                  metric=None, # None
                  logger=None,
                  pklfile_prefix=None, # 提交结果是ture
@@ -335,10 +337,11 @@ class OusterDataset(Custom3DDataset):
         Returns:
             dict[str, float]: Results of each evaluation metric.
         """
+        # 预测结果
         result_files, tmp_dir = self.format_results(results, pklfile_prefix)  # ===========================================================================
 
         from mmdet3d.core.evaluation import kitti_eval, ouster_eval# mmdet3d/core/evaluation/kitti_utils/eval.py 评测=================================================
-        gt_annos = [info['annos'] for info in self.data_infos] # 得到GT
+        gt_annos = [info['annos'] for info in self.data_infos] # 得到GT  def get_label_anno_ouster(label_path):   tools/data_converter/kitti_data_utils.py
 
         if isinstance(result_files, dict):
             ap_dict = dict()
@@ -348,8 +351,8 @@ class OusterDataset(Custom3DDataset):
                 if 'img' in name:
                     eval_types = ['bbox']
                 ap_result_str, ap_dict_ = ouster_eval( # 开始评测的入口 ，调用 mmdet3d/core/evaluation/kitti_utils/eval.py
-                    gt_annos,
-                    result_files_,
+                    gt_annos, # 输入GT======================================================================
+                    result_files_, # 输入预测结果=====================================================================
                     self.CLASSES,
                     eval_types=eval_types)
                 for ap_type, ap in ap_dict_.items():
@@ -414,7 +417,6 @@ class OusterDataset(Custom3DDataset):
                 scores=scores[valid_inds].numpy(),
                 label_preds=labels[valid_inds].numpy(),
                 sample_idx=sample_idx)
-            
              """
             anno = {
                 'name': [],
@@ -643,8 +645,8 @@ class OusterDataset(Custom3DDataset):
         # sample_idx = info['image']['image_idx']
         sample_idx = info['point_cloud']['pc_idx'] # GT
         # TODO: remove the hack of yaw
-        box_preds.tensor[:, -1] = box_preds.tensor[:, -1] - np.pi # 最后一列
-        box_preds.limit_yaw(offset=0.5, period=np.pi * 2) # self.tensor[:, 6]
+        box_preds.tensor[:, -1] = box_preds.tensor[:, -1] - np.pi # 最后一列==============================================================
+        box_preds.limit_yaw(offset=0.5, period=np.pi * 2) # self.tensor[:, 6]最后一维
 
         if len(box_preds) == 0: # 直接返回0
             return dict(

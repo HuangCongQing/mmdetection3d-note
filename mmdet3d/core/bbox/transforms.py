@@ -51,7 +51,7 @@ def bbox3d2result(bboxes, scores, labels, attrs=None):
     """Convert detection results to a list of numpy arrays.
 
     Args:
-        bboxes (torch.Tensor): Bounding boxes with shape of (n, 5).
+        bboxes (torch.Tensor): Bounding boxes with shape of (n, 5). # ??????????5
         labels (torch.Tensor): Labels with shape of (n, ).
         scores (torch.Tensor): Scores with shape of (n, ).
         attrs (torch.Tensor, optional): Attributes with shape of (n, ). \
