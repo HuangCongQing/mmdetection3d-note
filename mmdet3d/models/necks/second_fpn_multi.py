@@ -99,18 +99,20 @@ class SECONDFPNMULTI(BaseModule):
         # else:
         #     out = ups[0]
 
-        # 2 改进：相加 得到(6, 2C, W/2,H/2)，再进行ReLU
-        relu1 = nn.ReLU(inplace=True)
-        up1 = 0.7*ups[0]+0.2*ups[1]+0.1*ups[2]
-        up1 = relu1(up1)
-        up2 = 0.2*ups[0]+0.7*ups[1]+0.1*ups[2]
-        up2 = relu1(up2)
-        up3 = 0.2*ups[0]+0.1*ups[1]+0.7*ups[2]
-        up3 = relu1(up3)
-        ups_pro = [up1, up2, up3]
-        out = torch.cat(ups_pro, dim=1) 
+        # 方法1 改进：相加 得到(6, 2C, W/2,H/2)，再进行ReLU
+        # relu1 = nn.ReLU(inplace=True)
+        # up1 = 0.7*ups[0]+0.2*ups[1]+0.1*ups[2]
+        # up1 = relu1(up1)
+        # up2 = 0.2*ups[0]+0.7*ups[1]+0.1*ups[2]
+        # up2 = relu1(up2)
+        # up3 = 0.2*ups[0]+0.1*ups[1]+0.7*ups[2]
+        # up3 = relu1(up3)
+        # ups_pro = [up1, up2, up3]
+        # out = torch.cat(ups_pro, dim=1) 
         # print("直接相加：", out) # (6, 2C, W/2,H/2)
         # relu1 = nn.ReLU(inplace=True)
         # out = relu1(out)
+        # 方法2 改进CBAM多通道卷积 https://www.yuque.com/huangzhongqing/lxph5a/mur8gs#o8sag
+        
 
         return [out] # {list: 1}[ Tensor: (6, 6C, W/2,H/2)]. 对三个特征图进行上采样至相同大小，然后进行concatenation

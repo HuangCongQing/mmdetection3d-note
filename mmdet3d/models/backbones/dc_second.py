@@ -78,5 +78,5 @@ class DCSECOND(BaseModule):
         outs = []
         for i in range(len(self.blocks)):
             x = self.blocks[i](x)
-            outs.append(x)
+            outs.append(x) # backbone有三个输出
         return tuple(outs)
