@@ -4,14 +4,14 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-10-19 10:47:15
-LastEditTime: 2021-10-19 10:58:00
+LastEditTime: 2021-10-19 14:14:17
 FilePath: /mmdetection3d/mmdet3d/models/necks/cbam.py
 '''
 import torch
 import torch.nn as nn
 import torchvision
 
-
+# 在通道维度上进行全局的pooling操作，再经过同一个MLP得到权重，相加作为最终的注意力向量（权重）。
 class ChannelAttentionModule(nn.Module):
     def __init__(self, channel, ratio=16):
         super(ChannelAttentionModule, self).__init__()
@@ -53,9 +53,9 @@ class CBAM(nn.Module):
         self.spatial_attention = SpatialAttentionModule() # 空间注意力
 
     def forward(self, x):
-        out = self.channel_attention(x) * x
+        out = self.channel_attention(x) * x #
         print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
-        out = self.spatial_attention(out) * out
+        out = self.spatial_attention(out) * out #
         return out
 
 
@@ -75,7 +75,7 @@ class ResBlock_CBAM(nn.Module):
             nn.Conv2d(in_channels=places, out_channels=places*self.expansion, kernel_size=1, stride=1, bias=False),
             nn.BatchNorm2d(places*self.expansion),
         )
-        self.cbam = CBAM(channel=places*self.expansion)
+        self.cbam = CBAM(channel=places*self.expansion) # 初始化cbam 输入参数channel
 
         if self.downsampling:
             self.downsample = nn.Sequential(
@@ -88,7 +88,7 @@ class ResBlock_CBAM(nn.Module):
         residual = x
         out = self.bottleneck(x) 
         print(x.shape) # torch.Size([1, 16, 64, 64])
-        out = self.cbam(out) # 调用=============================
+        out = self.cbam(out) # 调用cbam=============================
         if self.downsampling:
             residual = self.downsample(x)
 
@@ -96,11 +96,10 @@ class ResBlock_CBAM(nn.Module):
         out = self.relu(out)
         return out
 
-
-model = ResBlock_CBAM(in_places=16, places=4)
+model = ResBlock_CBAM(in_places=16, places=4) # 调用
 print(model)
 
-input = torch.randn(1, 16, 64, 64)
+input = torch.randn(1, 16, 64, 64) # (B C H W)注意维度
 out = model(input)
 print('out.shape {}'.format(out.shape)) # torch.Size([1, 16, 64, 64])
 

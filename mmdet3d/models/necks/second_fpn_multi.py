@@ -5,7 +5,8 @@ from mmcv.cnn import build_conv_layer, build_norm_layer, build_upsample_layer
 from mmcv.runner import BaseModule, auto_fp16
 from torch import nn as nn
 
-from mmdet.models import NECKS
+from mmdet.models import NECKS # 调用from mmdet.models 中init的NECKS
+from .cbam import CBAM # 调用class CBAM(nn.Module):  donot dot
 
 
 @NECKS.register_module()
@@ -39,6 +40,8 @@ class SECONDFPNMULTI(BaseModule):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.fp16_enabled = False
+        # CBAM
+        self.cbam = CBAM(channel=6*64) # 6C=初始化cbam 输入参数channel
 
         deblocks = []
         for i, out_channel in enumerate(out_channels):
@@ -80,25 +83,25 @@ class SECONDFPNMULTI(BaseModule):
             x (torch.Tensor): 4D Tensor in (N, C, H, W) shape.
             x = {tuple:3}
             0 = {6,C, H/2, W/2 }= (6,64,248,216)
-            1 = {6,2C, H/4, W/4 }
-            2 = {6,4C, H/8, W/8 }
+            1 = {6,2C, H/4, W/4 }= (6,128,124,216)
+            2 = {6,4C, H/8, W/8 }= (6,256,62,54)
 
         Returns:
             list[torch.Tensor]: Multi-level feature maps.
         """
         assert len(x) == len(self.in_channels)
-        ups = [deblock(x[i]) for i, deblock in enumerate(self.deblocks)] # self.deblocks = nn.ModuleList(deblocks)
+        ups = [deblock(x[i]) for i, deblock in enumerate(self.deblocks)] # deblocks用来反卷积 self.deblocks = nn.ModuleList(deblocks)=============
         # ups = {list:3}
         # 0=(6,128,248,216) = (6, 2C, W/2,H/2)
         # 1=(6,128,248,216) = (6, 2C, W/2,H/2)
-        # 1=(6,128,248,216) = (6, 2C, W/2,H/2)
+        # 2=(6,128,248,216) = (6, 2C, W/2,H/2)
 
         #1  popillars的原始方法：concat操作，让浅层和深层的特征图叠在一起
-        # if len(ups) > 1:
-        #     out = torch.cat(ups, dim=1) #  concat结合 Tensor: (6, 6C, W/2,H/2)
-        # else:
-        #     out = ups[0]
-
+        if len(ups) > 1:
+            out = torch.cat(ups, dim=1) #  concat结合 Tensor: (6, 6C, W/2,H/2) (6, 384, 248, 216)
+        else:
+            out = ups[0]
+    
         # 方法1 改进：相加 得到(6, 2C, W/2,H/2)，再进行ReLU
         # relu1 = nn.ReLU(inplace=True)
         # up1 = 0.7*ups[0]+0.2*ups[1]+0.1*ups[2]
@@ -112,7 +115,9 @@ class SECONDFPNMULTI(BaseModule):
         # print("直接相加：", out) # (6, 2C, W/2,H/2)
         # relu1 = nn.ReLU(inplace=True)
         # out = relu1(out)
+
         # 方法2 改进CBAM多通道卷积 https://www.yuque.com/huangzhongqing/lxph5a/mur8gs#o8sag
-        
+        #用不到 out = out.unsqueeze(0) # Tensor: (1, 6, 6C, W/2,H/2)   (BCHW)
+        out = self.cbam(out) # input:  (6, 6C, W/2,H/2) (6, 384, 248, 216) 调用cbam=============================
 
         return [out] # {list: 1}[ Tensor: (6, 6C, W/2,H/2)]. 对三个特征图进行上采样至相同大小，然后进行concatenation

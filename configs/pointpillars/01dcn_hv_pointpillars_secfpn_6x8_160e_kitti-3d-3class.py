@@ -96,12 +96,12 @@ model = dict(
     ),
     
     # 优化2：多检测融合（无效果）
-    # neck=dict(
-    # _delete_=True,  # 覆盖基础配置文件里的部分内容
-    #     type='SECONDFPNMULTI', # 优化
-    #     in_channels=[64, 128, 256],
-    #     upsample_strides=[1, 2, 4],
-    #     out_channels=[128, 128, 128]),
+    neck=dict(
+    _delete_=True,  # 覆盖基础配置文件里的部分内容
+        type='SECONDFPNMULTI', # 优化
+        in_channels=[64, 128, 256],
+        upsample_strides=[1, 2, 4],
+        out_channels=[128, 128, 128]),
 )
 
 #  训练策略 (schedule) ======================================================================
