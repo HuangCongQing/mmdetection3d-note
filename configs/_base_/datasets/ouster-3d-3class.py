@@ -1,9 +1,11 @@
 # dataset settings
 dataset_type = 'OusterDataset' # # 数据集类型  mmdet3d/datasets/ouster_dataset.py
-# data_root = 'data/ouster/' # # 数据路径
-data_root = 'data/kittiTest/' #
-class_names = ['Pedestrian', 'Cyclist', 'Car'] # 类的名称
-# CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
+
+# data_root = 'data/kittiTest/' #
+# class_names = ['Pedestrian', 'Cyclist', 'Car'] # 类的名称
+# 修改
+data_root = 'data/ouster/' # # 数据路径
+CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
 point_cloud_range = [0, -40, -3, 70.4, 40, 1]
 input_modality = dict(use_lidar=True, use_camera=False)
 # db_sampler = dict( # mmdet3d/datasets/pipelines/dbsampler.py

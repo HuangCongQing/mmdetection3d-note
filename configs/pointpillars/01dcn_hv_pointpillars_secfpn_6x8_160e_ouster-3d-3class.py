@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-10-15 19:35:11
+LastEditTime: 2021-10-17 21:38:44
 FilePath: /mmdetection3d/configs/pointpillars/01dcn_hv_pointpillars_secfpn_6x8_160e_ouster-3d-3class.py
 '''
 _base_ = [
@@ -16,10 +16,12 @@ _base_ = [
 # 1 数据集 (dataset)  data = dict()================================================================================
 point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]
 # dataset settings 数据集配置
-# data_root = 'data/ouster/'
-data_root = 'data/kittiTest/'
-class_names = ['Pedestrian', 'Cyclist', 'Car']
-# CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
+# data_root = 'data/kittiTest/'
+# class_names = ['Pedestrian', 'Cyclist', 'Car']
+# 修改
+data_root = 'data/ouster/'
+CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
+
 # PointPillars adopted a different sampling strategies among classes
 # db_sampler = dict(
 #     data_root=data_root,

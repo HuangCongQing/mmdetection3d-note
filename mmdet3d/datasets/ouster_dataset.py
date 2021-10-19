@@ -182,6 +182,7 @@ class OusterDataset(Custom3DDataset):
         # 参考：https://mmdetection3d.readthedocs.io/zh_CN/latest/api.html#mmdet3d.core.bbox.CameraInstance3DBoxes
         # gt_bboxes_3d = CameraInstance3DBoxes(gt_bboxes_3d).convert_to(
         #     self.box_mode_3d, np.linalg.inv(rect @ Trv2c))
+        
         # gt_bboxes = annos['bbox']
         # selected = self.drop_arrays_by_name(gt_names, ['DontCare']) # 不要DonCare
         # gt_bboxes = gt_bboxes[selected].astype('float32')
