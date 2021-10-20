@@ -29,12 +29,12 @@ def main():
 
     # build the model from a config file and a checkpoint file
     model = init_model(args.config, args.checkpoint, device=args.device)
-    # test a single image  循环50次，计算耗时
+    # test a single image  循环1000次，计算耗时
     start = time.time()
-    for i in tqdm(range(50)):
+    for i in tqdm(range(1000)):
         result, data = inference_detector(model, args.pcd)
     end = time.time()
-    print('Time comsumption:{:.3f}hz  based on GPU:{}'.format(50/(end - start), next(model.parameters()).is_cuda))
+    print('Time comsumption:{:.3f}hz  based on GPU:{}'.format(1000/(end - start), next(model.parameters()).is_cuda))
 
     # show the results 生成。obj文件
     show_result_meshlab(

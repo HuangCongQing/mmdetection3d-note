@@ -27,7 +27,7 @@ class ChannelAttentionModule(nn.Module):
 
     def forward(self, x):
         avgout = self.shared_MLP(self.avg_pool(x))
-        print('【Channel】avgout.shape {}'.format(avgout.shape)) # torch.Size([1, 16, 1, 1])
+        # print('【Channel】avgout.shape {}'.format(avgout.shape)) # torch.Size([1, 16, 1, 1])
         maxout = self.shared_MLP(self.max_pool(x))
         return self.sigmoid(avgout + maxout)
 
@@ -54,7 +54,7 @@ class CBAM(nn.Module):
 
     def forward(self, x):
         out = self.channel_attention(x) * x #
-        print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
+        # print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
         out = self.spatial_attention(out) * out #
         return out
 
@@ -87,7 +87,7 @@ class ResBlock_CBAM(nn.Module):
     def forward(self, x):
         residual = x
         out = self.bottleneck(x) 
-        print(x.shape) # torch.Size([1, 16, 64, 64])
+        # print(x.shape) # torch.Size([1, 16, 64, 64])
         out = self.cbam(out) # 调用cbam=============================
         if self.downsampling:
             residual = self.downsample(x)
@@ -101,7 +101,7 @@ print(model)
 
 input = torch.randn(1, 16, 64, 64) # (B C H W)注意维度
 out = model(input)
-print('out.shape {}'.format(out.shape)) # torch.Size([1, 16, 64, 64])
+# print('out.shape {}'.format(out.shape)) # torch.Size([1, 16, 64, 64])
 
 # 运行代码： python mmdet3d/models/necks/cbam.py
 ''' 
