@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-10-19 10:47:15
-LastEditTime: 2021-10-21 14:57:58
+LastEditTime: 2021-10-21 17:10:32
 FilePath: /mmdetection3d/mmdet3d/models/necks/cbam.py
 '''
 import torch
@@ -61,6 +61,8 @@ class CBAM(nn.Module):
         return out
 
 
+
+# 以下为测试======================================================
 class ResBlock_CBAM(nn.Module):
     def __init__(self,in_places, places, stride=1,downsampling=False, expansion = 4):
         super(ResBlock_CBAM,self).__init__()
@@ -98,12 +100,12 @@ class ResBlock_CBAM(nn.Module):
         out = self.relu(out)
         return out
 
-model = ResBlock_CBAM(in_places=16, places=4) # 调用
-print(model)
+# model = ResBlock_CBAM(in_places=16, places=4) # 调用
+# print(model)
 
-input = torch.randn(1, 16, 64, 64) # (B C H W)注意维度
-out = model(input)
-print('out.shape {}'.format(out.shape)) # torch.Size([1, 16, 64, 64])
+# input = torch.randn(1, 16, 64, 64) # (B C H W)注意维度
+# out = model(input)
+# print('out.shape {}'.format(out.shape)) # torch.Size([1, 16, 64, 64])
 
 # 运行代码： python mmdet3d/models/necks/cbam.py
 ''' 

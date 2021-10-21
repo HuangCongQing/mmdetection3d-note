@@ -50,8 +50,8 @@ class OusterDataset(Custom3DDataset):
         pcd_limit_range (list): The range of point cloud used to filter
             invalid predicted boxes. Default: [0, -40, -3, 70.4, 40, 0.0].
     """
-    CLASSES = ('car', 'pedestrian', 'cyclist') #
-    # CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
+    # CLASSES = ('car', 'pedestrian', 'cyclist') #
+    CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
     # 修改=============================================================================
     def __init__(self,
                  data_root,
