@@ -27,7 +27,7 @@ class ChannelAttentionModule(nn.Module):
 
     def forward(self, x):
         avgout = self.shared_MLP(self.avg_pool(x)) # torch.Size([1, 16, 1, 1])
-        print('【Channel】avgout.shape {}'.format(avgout.shape)) # torch.Size([1, 16, 1, 1])
+        # print('【Channel】avgout.shape {}'.format(avgout.shape)) # torch.Size([1, 16, 1, 1])
         maxout = self.shared_MLP(self.max_pool(x)) # torch.Size([1, 16, 1, 1])
         return self.sigmoid(avgout + maxout) # torch.Size([1, 16, 1, 1])
 
@@ -54,8 +54,8 @@ class CBAM(nn.Module):
 
     def forward(self, x): # main func
         out = self.channel_attention(x) * x #通道 torch.Size([1, 16, 1, 1])   *  torch.Size([1, 16, 64, 64])
-        print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
-        # out = self.spatial_attention(out) * out #空间   # torch.Size([1, 1, 64, 64])   *  torch.Size([1, 16, 64, 64])
+        # print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
+        out = self.spatial_attention(out) * out #空间   # torch.Size([1, 1, 64, 64])   *  torch.Size([1, 16, 64, 64])
         return out
 
 
@@ -87,7 +87,7 @@ class ResBlock_CBAM(nn.Module):
     def forward(self, x):
         residual = x
         out = self.bottleneck(x) 
-        print(x.shape) # torch.Size([1, 16, 64, 64])
+        # print(x.shape) # torch.Size([1, 16, 64, 64])
         out = self.cbam(out) # 调用cbam=============================
         if self.downsampling:
             residual = self.downsample(x)
