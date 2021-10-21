@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-10-19 10:47:15
-LastEditTime: 2021-10-21 13:00:01
+LastEditTime: 2021-10-21 14:57:58
 FilePath: /mmdetection3d/mmdet3d/models/necks/cbam.py
 '''
 import torch
@@ -23,13 +23,15 @@ class ChannelAttentionModule(nn.Module):
             nn.ReLU(),
             nn.Conv2d(channel // ratio, channel, 1, bias=False)
         )
-        self.sigmoid = nn.Sigmoid() # nn.Softmax(dim = 1)??????
+        self.sigmoid = nn.Sigmoid() # 
+        # self.softmax = nn.Softmax(dim = 1) #channel维度上处理 nn.Softmax(dim = 1)?????
 
     def forward(self, x):
         avgout = self.shared_MLP(self.avg_pool(x)) # torch.Size([1, 16, 1, 1])
         # print('【Channel】avgout.shape {}'.format(avgout.shape)) # torch.Size([1, 16, 1, 1])
         maxout = self.shared_MLP(self.max_pool(x)) # torch.Size([1, 16, 1, 1])
         return self.sigmoid(avgout + maxout) # torch.Size([1, 16, 1, 1])
+        # return self.softmax(avgout + maxout) # torch.Size([1, 16, 1, 1])
 
 # 通道注意力
 class SpatialAttentionModule(nn.Module):
