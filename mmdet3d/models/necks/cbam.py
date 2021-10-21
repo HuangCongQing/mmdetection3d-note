@@ -52,10 +52,10 @@ class CBAM(nn.Module):
         self.channel_attention = ChannelAttentionModule(channel) # 通道注意力
         self.spatial_attention = SpatialAttentionModule() # 空间注意力
 
-    def forward(self, x): # main func
+    def forward(self, x): # main func 输入 pointpillars：(6, 384, 248, 216)
         out = self.channel_attention(x) * x #通道 torch.Size([1, 16, 1, 1])   *  torch.Size([1, 16, 64, 64])
         # print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
-        out = self.spatial_attention(out) * out #空间   # torch.Size([1, 1, 64, 64])   *  torch.Size([1, 16, 64, 64])
+        # out = self.spatial_attention(out) * out #空间   # torch.Size([1, 1, 64, 64])   *  torch.Size([1, 16, 64, 64])
         return out
 
 
