@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-10-19 10:47:15
-LastEditTime: 2021-10-19 14:14:17
+LastEditTime: 2021-10-21 13:00:01
 FilePath: /mmdetection3d/mmdet3d/models/necks/cbam.py
 '''
 import torch
@@ -15,34 +15,34 @@ import torchvision
 class ChannelAttentionModule(nn.Module):
     def __init__(self, channel, ratio=16):
         super(ChannelAttentionModule, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.avg_pool = nn.AdaptiveAvgPool2d(1) # 1是输出特征图大小
+        self.max_pool = nn.AdaptiveMaxPool2d(1) # 
 
         self.shared_MLP = nn.Sequential(
-            nn.Conv2d(channel, channel // ratio, 1, bias=False),
+            nn.Conv2d(channel, channel // ratio, 1, bias=False), # nn.Conv2d(输入channels，输出channels，卷积核kernels_size=3, padding=1, bias=False)
             nn.ReLU(),
             nn.Conv2d(channel // ratio, channel, 1, bias=False)
         )
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        avgout = self.shared_MLP(self.avg_pool(x))
-        # print('【Channel】avgout.shape {}'.format(avgout.shape)) # torch.Size([1, 16, 1, 1])
-        maxout = self.shared_MLP(self.max_pool(x))
-        return self.sigmoid(avgout + maxout)
+        avgout = self.shared_MLP(self.avg_pool(x)) # torch.Size([1, 16, 1, 1])
+        print('【Channel】avgout.shape {}'.format(avgout.shape)) # torch.Size([1, 16, 1, 1])
+        maxout = self.shared_MLP(self.max_pool(x)) # torch.Size([1, 16, 1, 1])
+        return self.sigmoid(avgout + maxout) # torch.Size([1, 16, 1, 1])
 
-
+# 通道注意力
 class SpatialAttentionModule(nn.Module):
     def __init__(self):
         super(SpatialAttentionModule, self).__init__()
-        self.conv2d = nn.Conv2d(in_channels=2, out_channels=1, kernel_size=7, stride=1, padding=3)
+        self.conv2d = nn.Conv2d(in_channels=2, out_channels=1, kernel_size=7, stride=1, padding=3) # 卷积核大小7
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        avgout = torch.mean(x, dim=1, keepdim=True)
-        maxout, _ = torch.max(x, dim=1, keepdim=True)
-        out = torch.cat([avgout, maxout], dim=1)
-        out = self.sigmoid(self.conv2d(out))
+        avgout = torch.mean(x, dim=1, keepdim=True) # (1,1,64,64)
+        maxout, _ = torch.max(x, dim=1, keepdim=True) # # (1,1,64,64)
+        out = torch.cat([avgout, maxout], dim=1) # (1,2,64,64)
+        out = self.sigmoid(self.conv2d(out)) #  (1,2,64,64)-->(1,1,64,64)     nn.Conv2d(in_channels=2, out_channels=1
         return out
 
 # CBAM调用
@@ -52,10 +52,10 @@ class CBAM(nn.Module):
         self.channel_attention = ChannelAttentionModule(channel) # 通道注意力
         self.spatial_attention = SpatialAttentionModule() # 空间注意力
 
-    def forward(self, x):
-        out = self.channel_attention(x) * x #
-        # print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
-        out = self.spatial_attention(out) * out #
+    def forward(self, x): # main func
+        out = self.channel_attention(x) * x #通道 torch.Size([1, 16, 1, 1])   *  torch.Size([1, 16, 64, 64])
+        print('outchannels:{}'.format(out.shape)) # outchannels:torch.Size([1, 16, 64, 64])
+        # out = self.spatial_attention(out) * out #空间   # torch.Size([1, 1, 64, 64])   *  torch.Size([1, 16, 64, 64])
         return out
 
 
@@ -87,7 +87,7 @@ class ResBlock_CBAM(nn.Module):
     def forward(self, x):
         residual = x
         out = self.bottleneck(x) 
-        # print(x.shape) # torch.Size([1, 16, 64, 64])
+        print(x.shape) # torch.Size([1, 16, 64, 64])
         out = self.cbam(out) # 调用cbam=============================
         if self.downsampling:
             residual = self.downsample(x)
@@ -101,7 +101,7 @@ print(model)
 
 input = torch.randn(1, 16, 64, 64) # (B C H W)注意维度
 out = model(input)
-# print('out.shape {}'.format(out.shape)) # torch.Size([1, 16, 64, 64])
+print('out.shape {}'.format(out.shape)) # torch.Size([1, 16, 64, 64])
 
 # 运行代码： python mmdet3d/models/necks/cbam.py
 ''' 
