@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-10-17 21:38:44
+LastEditTime: 2021-10-21 17:05:36
 FilePath: /mmdetection3d/configs/pointpillars/01dcn_hv_pointpillars_secfpn_6x8_160e_ouster-3d-3class.py
 '''
 _base_ = [
@@ -14,11 +14,12 @@ _base_ = [
 ]
 
 # 1 数据集 (dataset)  data = dict()================================================================================
-point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]
+# point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1] #  (x_min, y_min, z_min, x_max, y_max, z_max)
 # dataset settings 数据集配置
 # data_root = 'data/kittiTest/'
 # class_names = ['Pedestrian', 'Cyclist', 'Car']
-# 修改
+# ouster修改
+point_cloud_range =  [0, -40, -3,   60, 40, 10] # ouster配置(x,y,z) 考虑矿车高度！！x[] y[] z[-3, 10]
 data_root = 'data/ouster/'
 CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
 
@@ -49,7 +50,7 @@ train_pipeline = [
         type='GlobalRotScaleTrans',
         rot_range=[-0.78539816, 0.78539816],
         scale_ratio_range=[0.95, 1.05]),
-    dict(type='PointsRangeFilter', point_cloud_range=point_cloud_range),
+    dict(type='PointsRangeFilter', point_cloud_range=point_cloud_range), # 点云范围
     dict(type='ObjectRangeFilter', point_cloud_range=point_cloud_range),
     dict(type='PointShuffle'),
     dict(type='DefaultFormatBundle3D', class_names=class_names),
@@ -107,8 +108,7 @@ model = dict(
     #     upsample_strides=[1, 2, 4],
     #     out_channels=[128, 128, 128]),
 )
-
-#  训练策略 (schedule) ======================================================================
+# 训练策略 (schedule) ======================================================================
 # In practice PointPillars also uses a different schedule
 # optimizer
 lr = 0.001
