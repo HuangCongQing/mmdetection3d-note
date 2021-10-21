@@ -31,6 +31,7 @@ class DCSECOND(BaseModule):
         for i, layer_num in enumerate(layer_nums): # 循环3次
             # 每个block包含(Conv2d BN ReLU)
             block = [
+                # 卷积层(conv)
                 build_conv_layer( # 来自 mmcv.cnn 
                     dcn_config,  # 调用DCN
                     in_filters[i],
@@ -38,12 +39,14 @@ class DCSECOND(BaseModule):
                     3,
                     stride=layer_strides[i],
                     padding=1),
+                # 归一化(BN)
                 build_norm_layer(norm_cfg, out_channels[i])[1],
+                # 非线性层(ReLU)
                 nn.ReLU(inplace=True),
             ]
             for j in range(layer_num): # 分别循环3，5，5次layer_nums=[3, 5, 5],
                 block.append(
-                    build_conv_layer(
+                    build_conv_layer( # 卷积层(conv)、归一化(BN)、非线性层(ReLU)
                         conv_cfg, # conv_cfg=dict(type='Conv2d', bias=False),
                         out_channels[i],
                         out_channels[i],

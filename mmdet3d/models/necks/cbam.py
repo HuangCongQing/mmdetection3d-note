@@ -23,7 +23,7 @@ class ChannelAttentionModule(nn.Module):
             nn.ReLU(),
             nn.Conv2d(channel // ratio, channel, 1, bias=False)
         )
-        self.sigmoid = nn.Sigmoid()
+        self.sigmoid = nn.Sigmoid() # nn.Softmax(dim = 1)??????
 
     def forward(self, x):
         avgout = self.shared_MLP(self.avg_pool(x)) # torch.Size([1, 16, 1, 1])
@@ -50,7 +50,7 @@ class CBAM(nn.Module):
     def __init__(self, channel):
         super(CBAM, self).__init__()
         self.channel_attention = ChannelAttentionModule(channel) # 通道注意力
-        self.spatial_attention = SpatialAttentionModule() # 空间注意力
+        # self.spatial_attention = SpatialAttentionModule() # 空间注意力
 
     def forward(self, x): # main func 输入 pointpillars：(6, 384, 248, 216)
         out = self.channel_attention(x) * x #通道 torch.Size([1, 16, 1, 1])   *  torch.Size([1, 16, 64, 64])
