@@ -676,7 +676,8 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
                                           dt_boxes).astype(np.float64) # 计算=============================
         else:
             raise ValueError('unknown metric')
-        parted_overlaps.append(overlap_part)
+        parted_overlaps.append(overlap_part) #
+
         example_idx += num_part
     overlaps = []
     example_idx = 0
@@ -909,7 +910,7 @@ def eval_class(gt_annos,
     gc.collect()
     return ret_dict  # 返回
 
-
+#
 def get_mAP(prec):
     sums = 0
     for i in range(0, prec.shape[-1], 4):
