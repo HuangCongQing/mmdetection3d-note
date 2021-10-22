@@ -21,7 +21,7 @@ _base_ = [
 # ouster修改
 point_cloud_range =  [0, -40, -3,   60, 40, 10] # ouster配置(x,y,z) 考虑矿车高度！！x[] y[] z[-3, 10]
 data_root = 'data/ouster/'
-class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary')
+class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
 
 
 # PointPillars adopted a different sampling strategies among classes
