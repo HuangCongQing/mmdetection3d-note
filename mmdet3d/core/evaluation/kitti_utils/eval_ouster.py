@@ -35,7 +35,9 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             current_class  :   0
             difficulty :  0
     '''
-    CLASS_NAMES = ['car', 'pedestrian', 'cyclist'] # #类别
+    # CLASS_NAMES = ['car', 'pedestrian', 'cyclist'] # #类别
+    CLASS_NAMES = ['Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary', 'Others']
+
     #检测难度从易到难，为了检测到同样数目的gt，使最小值减小，最大值增大
     # MIN_HEIGHT = [40, 25, 25] #高度
     # MAX_OCCLUSION = [0, 1, 2]  #遮挡
@@ -43,7 +45,7 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
     # dc_bboxes, ignored_gt = [], []
     ignored_gt, ignored_dt =  [], []
     
-    current_cls_name = CLASS_NAMES[current_class].lower() # 'pedestrian'  
+    current_cls_name = CLASS_NAMES[current_class].lower() # 'pedestrian'   报错：IndexError: list index out of range
 
     # 获取当前帧中物体object的个数
     num_gt = len(gt_anno['name'])  #gt数量
