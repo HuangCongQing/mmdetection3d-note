@@ -676,8 +676,24 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
                                           dt_boxes).astype(np.float64) # 计算=============================
         else:
             raise ValueError('unknown metric')
-        parted_overlaps.append(overlap_part)
+        parted_overlaps.append(overlap_part) # 
+        ''' (176, 16)
+        [array([[0.00019199, 0.        , 0.        , ..., 0.        , 0.        ,
+        0.        ],
+       [0.        , 0.        , 0.        , ..., 0.00085803, 0.        ,
+        0.        ],
+       [0.        , 0.        , 0.        , ..., 0.00768037, 0.        ,
+        0.        ],
+       ...,
+       [0.        , 0.        , 0.        , ..., 0.        , 0.        ,
+        0.        ],
+       [0.        , 0.        , 0.        , ..., 0.        , 0.        ,
+        0.        ],
+       [0.        , 0.        , 0.        , ..., 0.        , 0.00692087,
+        0.01676498]])]
+        '''
         example_idx += num_part
+    
     overlaps = []
     example_idx = 0
     for j, num_part in enumerate(split_parts):
@@ -836,7 +852,7 @@ def eval_class(gt_annos,
                         min_overlap=min_overlap,
                         thresh=0.0,
                         compute_fp=False)
-                    tp, fp, fn, similarity, thresholds = rets
+                    tp, fp, fn, similarity, thresholds = rets # ======================================
                     thresholdss += thresholds.tolist()
                 
                 thresholdss = np.array(thresholdss)
@@ -898,7 +914,7 @@ def eval_class(gt_annos,
                             aos[m, idx_l, k, i:], axis=-1)
     ret_dict = {
         'recall': recall,  # [num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS]  
-        'precision': precision,   # RECALLING RECALL的顺序，因此精度降低
+        'precision': precision,   # RECALLING RECALL的顺序，因此精度降低====================================
         'orientation': aos,
     }
 
@@ -909,7 +925,7 @@ def eval_class(gt_annos,
     gc.collect()
     return ret_dict  # 返回
 
-
+#
 def get_mAP(prec):
     sums = 0
     for i in range(0, prec.shape[-1], 4):
@@ -929,7 +945,7 @@ def print_str(value, *arg, sstream=None):
 def do_eval(gt_annos,
             dt_annos,
             current_classes,
-            min_overlaps,
+            min_overlaps, # min_overlaps？？？？？//
             eval_types=['3d']): # 修改      # eval_types=['bbox', 'bev', '3d']):
     # min_overlaps: [num_minoverlap, metric, num_class]
     difficultys = [0, 1, 2]
@@ -967,7 +983,7 @@ def do_eval(gt_annos,
 def do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges,
                        compute_aos):
     # overlap_ranges: [range, metric, num_class]
-    min_overlaps = np.zeros([10, *overlap_ranges.shape[1:]])
+    min_overlaps = np.zeros([10, *overlap_ranges.shape[1:]]) # 都是0
     for i in range(overlap_ranges.shape[1]):
         for j in range(overlap_ranges.shape[2]):
             min_overlaps[:, i, j] = np.linspace(*overlap_ranges[:, i, j])
@@ -1042,7 +1058,8 @@ def ouster_eval(gt_annos,
         else:
             current_classes_int.append(curcls)
     current_classes = current_classes_int
-    min_overlaps = min_overlaps[:, :, current_classes]
+    # min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)
+    min_overlaps = min_overlaps[:, :, current_classes] # 计算得到当前类的min_overlaps
     result = ''
     # check whether alpha is valid
     compute_aos = False
