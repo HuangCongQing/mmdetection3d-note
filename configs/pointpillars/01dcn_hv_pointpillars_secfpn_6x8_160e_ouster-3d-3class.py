@@ -8,7 +8,7 @@ LastEditTime: 2021-10-21 17:12:25
 FilePath: /mmdetection3d/configs/pointpillars/01dcn_hv_pointpillars_secfpn_6x8_160e_ouster-3d-3class.py
 '''
 _base_ = [
-    '../_base_/models/hv_pointpillars_secfpn_kitti.py', # pointpillars模型配置  configs/_base_/models/hv_pointpillars_secfpn_kitti.py
+    '../_base_/models/hv_pointpillars_secfpn_ouster.py', # pointpillars模型配置  configs/_base_/models/hv_pointpillars_secfpn_kitti.py
     '../_base_/datasets/ouster-3d-3class.py', # ouster数据集
     '../_base_/schedules/cyclic_40e.py', '../_base_/default_runtime.py'
 ]
