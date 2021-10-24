@@ -4,10 +4,13 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-09-13 11:14:38
-FilePath: /mmdetection3d/configs/_base_/models/hv_pointpillars_secfpn_kitti.py
+LastEditTime: 2021-10-23 18:21:45
+FilePath: /mmdetection3d/configs/_base_/models/hv_pointpillars_secfpn_ouster.py
 '''
-voxel_size = [0.16, 0.16, 13] # 长宽高 z高度要和point_cloud_range高度一致z:[-3, 10]
+
+# voxel_size = [0.16, 0.16, 4] # 长宽高
+voxel_size = [0.16, 0.16, 8] # 长宽高 z高度要和point_cloud_range高度一致z:[-3, 10]
+# RuntimeError: cannot perform reduction function max on tensor with no elements because the operation does not have an identity
 
 model = dict(
     type='VoxelNet', # voxelnet.py模型名字  mmdet3d/models/detectors/__init__.py  mmdet3d/models/detectors/voxelnet.py

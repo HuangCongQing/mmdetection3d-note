@@ -631,7 +631,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
     assert len(gt_annos) == len(dt_annos) #
     total_dt_num = np.stack([len(a['name']) for a in dt_annos], 0)# [ 1  3  6  5 13]
     total_gt_num = np.stack([len(a['name']) for a in gt_annos], 0)# [50 50 50 50 50]
-    num_examples = len(gt_annos) # 5
+    num_examples = len(gt_annos) # 测试集文件数，这里是19
     split_parts = get_split_parts(num_examples, num_parts) # [2, 2, 1]
     parted_overlaps = []
     example_idx = 0
@@ -640,6 +640,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
         # # 基本上将数据集分成多个部分并进行迭代
         gt_annos_part = gt_annos[example_idx:example_idx + num_part]
         dt_annos_part = dt_annos[example_idx:example_idx + num_part]
+
         if metric == 0:  # metric (int): Eval type. 0: bbox, 1: bev, 2: 3d.
             gt_boxes = np.concatenate([a['bbox'] for a in gt_annos_part], 0) # 不会运行
             dt_boxes = np.concatenate([a['bbox'] for a in dt_annos_part], 0)
@@ -661,6 +662,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
                                       axis=1)
             overlap_part = bev_box_overlap(gt_boxes,
                                            dt_boxes).astype(np.float64)
+
         elif metric == 2: #:  2: 3d.=======================================================
             loc = np.concatenate([a['location'] for a in gt_annos_part], 0) # ValueError: need at least one array to concatenate
             dims = np.concatenate([a['dimensions'] for a in gt_annos_part], 0)
@@ -673,7 +675,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
             dt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1)
             overlap_part = d3_box_overlap(gt_boxes,
-                                          dt_boxes).astype(np.float64) # 计算=============================
+                                          dt_boxes).astype(np.float64) # 计算3d IOU=============================
         else:
             raise ValueError('unknown metric')
         parted_overlaps.append(overlap_part) # 
@@ -809,14 +811,14 @@ def eval_class(gt_annos,
     #如果验证集gt_annos中的帧数 和 从model中验证出来dt_annos帧的长度不一致，直接报错！
     assert len(gt_annos) == len(dt_annos)
     # 验证集中帧的总数是 num_examples:51
-    num_examples = len(gt_annos)
+    num_examples = len(gt_annos) # 
     #得到的split_parts是一个list的类型，num_parts=5,
     # 意思是将51分为5部分，经过一下函数得到的是：split_parts：[10,10,10,10,10,1]
     # if num_examples < num_parts:
     #     num_parts = num_examples
     split_parts = get_split_parts(num_examples, num_parts) # 
 
-    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 计算iou=======================================
+    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 计算iou（gt和dt互换了以下！！！）=======================================
     overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
     N_SAMPLE_PTS = 41
 
@@ -1031,7 +1033,9 @@ def ouster_eval(gt_annos,
     overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25]])
-    min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
+
+    # 通过下面一行，min_overlaps的形状是(2, 3, 7)的三维数组，7是因为有7个类别
+    min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 7]
     # class_to_name = { # 分类标签修改
     #     0: 'Car',
     #     1: 'Pedestrian',
@@ -1040,24 +1044,30 @@ def ouster_eval(gt_annos,
     #     4: 'Person_sitting',
     # }
     class_to_name = { # 分类标签修改   match  overlap_0_7
-        0: 'Truck',
-        1: 'Car',
+        0: 'Truck', # important!   ##[[0.7,0.7,0.7],[0.5, 0.5, 0.5]]等于上面数组的：min_overlaps[:,:,0]
+        1: 'Auxiliary', # important!
         2: 'Pedestrian',
         3: 'Excavator',
         4: 'Widebody',
-        5: 'Auxiliary',
+        5: 'Car',
         6: 'Others',
     }
+    # 将名字和对应的类别号反一下，便于索引
     name_to_class = {v: n for n, v in class_to_name.items()}
+
     if not isinstance(current_classes, (list, tuple)):
         current_classes = [current_classes]
+    # 定义一个空列表，如果current_classes中每一类为str类型，则存入相应的类别号
+    # 如当前判断的Car，Pedestrian，Cyclist，则current_classes_int=[ 0,1,2]
     current_classes_int = []
     for curcls in current_classes:
         if isinstance(curcls, str):
             current_classes_int.append(name_to_class[curcls])
         else:
             current_classes_int.append(curcls)
+    #当前的类别变成了含有数字的列表   current_classes=[ 0,1,2]
     current_classes = current_classes_int
+    
     # min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)
     min_overlaps = min_overlaps[:, :, current_classes] # 计算得到当前类的min_overlaps
     result = ''
@@ -1131,7 +1141,7 @@ def ouster_eval(gt_annos,
         if mAPbev is not None:
             mAPbev = mAPbev.mean(axis=0)
             result += 'bev  AP:{:.4f}, {:.4f}, {:.4f}\n'.format(*mAPbev[:, 0])
-        if mAP3d is not None:
+        if mAP3d is not None: # ==============================================
             mAP3d = mAP3d.mean(axis=0)
             result += '3d   AP:{:.4f}, {:.4f}, {:.4f}\n'.format(*mAP3d[:, 0])
         if compute_aos:
@@ -1142,7 +1152,7 @@ def ouster_eval(gt_annos,
         for idx in range(3):
             postfix = f'{difficulty[idx]}'
             if mAP3d is not None:
-                ret_dict[f'KITTI/Overall_3D_{postfix}'] = mAP3d[idx, 0]
+                ret_dict[f'KITTI/Overall_3D_{postfix}'] = mAP3d[idx, 0] # ==========================
             if mAPbev is not None:
                 ret_dict[f'KITTI/Overall_BEV_{postfix}'] = mAPbev[idx, 0]
             if mAPbbox is not None:

@@ -7,7 +7,7 @@ dataset_type = 'OusterDataset' # # 数据集类型  mmdet3d/datasets/ouster_data
 # 修改
 data_root = 'data/ouster/' # # 数据路径
 class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
-point_cloud_range =  [0, -40, -3,   60, 40, 10] # ouster配置(x,y,z) 考虑矿车高度！！x[] y[] z[-3, 10]
+point_cloud_range =  [0, -40, -3,   60, 40, 7.5] # ouster配置(x,y,z) 考虑矿车高度！！x[] y[] z[-3, 10]
 
 input_modality = dict(use_lidar=True, use_camera=False)
 # db_sampler = dict( # mmdet3d/datasets/pipelines/dbsampler.py
