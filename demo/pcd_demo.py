@@ -31,7 +31,7 @@ def main():
     model = init_model(args.config, args.checkpoint, device=args.device)
     # test a single image  循环1000次，计算耗时
     start = time.time()
-    for i in tqdm(range(1000)):
+    for i in tqdm(range(1)): # 循环次数
         result, data = inference_detector(model, args.pcd)
     end = time.time()
     print('Time comsumption:{:.3f}hz  based on GPU:{}'.format(1000/(end - start), next(model.parameters()).is_cuda))
