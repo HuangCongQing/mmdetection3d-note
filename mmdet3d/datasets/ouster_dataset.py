@@ -176,8 +176,8 @@ class OusterDataset(Custom3DDataset):
                                       axis=1).astype(np.float32)
         # 修改
         # 雷达坐标系：https://mmdetection3d.readthedocs.io/zh_CN/latest/api.html#mmdet3d.core.bbox.LiDARInstance3DBoxes
-        # LiDARInstance3DBoxes(tensor, box_dim=7, with_yaw=True, origin=(0.5, 0.5, 0))
-        gt_bboxes_3d = LiDARInstance3DBoxes(gt_bboxes_3d, origin=(0.5, 0.5, 0)).convert_to(self.box_mode_3d) # ====================================================================
+        # LiDARInstance3DBoxes(tensor, box_dim=7, with_yaw=True, origin=(0.5, 0.5, 0)) 目标框的0.5的长 0.5倍的宽和0倍的高
+        gt_bboxes_3d = LiDARInstance3DBoxes(gt_bboxes_3d, origin=(0.5, 0.5, 0.5))# .convert_to(self.box_mode_3d) # box_mode_3d= Box3DMode.LIDAR====================================================================
         # convert gt_bboxes_3d to velodyne coordinates  格式为 (x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
         # 参考：https://mmdetection3d.readthedocs.io/zh_CN/latest/api.html#mmdet3d.core.bbox.CameraInstance3DBoxes
         # gt_bboxes_3d = CameraInstance3DBoxes(gt_bboxes_3d).convert_to(
@@ -198,7 +198,7 @@ class OusterDataset(Custom3DDataset):
         gt_labels_3d = np.array(gt_labels_3d).astype(np.int64)
 
         anns_results = dict(
-            gt_bboxes_3d=gt_bboxes_3d,
+            gt_bboxes_3d=gt_bboxes_3d, # GTbbox
             gt_labels_3d=gt_labels_3d,
             # bboxes=gt_bboxes,
             # labels=gt_labels,

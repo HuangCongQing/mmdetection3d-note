@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-10-23 18:21:45
+LastEditTime: 2021-10-25 13:15:00
 FilePath: /mmdetection3d/configs/_base_/models/hv_pointpillars_secfpn_ouster.py
 '''
 
@@ -49,13 +49,14 @@ model = dict(
         feat_channels=384,
         use_direction_classifier=True,
         anchor_generator=dict( # 生成anchor
-            type='Anchor3DRangeGenerator',
-            ranges=[
-                [0, -39.68, -0.6, 70.4, 39.68, -0.6],
+            type='Anchor3DRangeGenerator', # https://mmdetection3d.readthedocs.io/zh_CN/latest/api.html#mmdet3d.core.anchor.AlignedAnchor3DRangeGenerator
+            ranges=[ # 修改生成anchor的range=============================================================================
+                [0, -39.68, -0.6, 70.4, 39.68, -0.6], # (x_min, y_min, z_min, x_max, y_max, z_max).
                 [0, -39.68, -0.6, 70.4, 39.68, -0.6],
                 [0, -39.68, -1.78, 70.4, 39.68, -1.78],
             ],
-            sizes=[[0.6, 0.8, 1.73], [0.6, 1.76, 1.73], [1.6, 3.9, 1.56]],
+            # sizes=[[0.6, 0.8, 1.73], [0.6, 1.76, 1.73], [1.6, 3.9, 1.56]], # ['Pedestrian', 'Cyclist', 'Car'] Anchor size with shape [N, 3], in order of x, y, z.
+            sizes=[[13, 6.5, 6.5], [7, 3.5, 3], [1.6, 3.9, 1.56]], # class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
             rotations=[0, 1.57],
             reshape_out=False),
         diff_rad_by_sin=True,

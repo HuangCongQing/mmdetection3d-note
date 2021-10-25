@@ -460,7 +460,7 @@ def compute_statistics_jit1(
     ignored_threshold = [False] * det_size    # 如果检测分数低于阈值，则存储数组
     if compute_fp:
         for i in range(det_size):
-            if (dt_scores[i] < thresh):
+            if (dt_scores[i] < thresh): # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
                 ignored_threshold[i] = True
     
     NO_DETECTION = -10000000

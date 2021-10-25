@@ -118,7 +118,7 @@ def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
     # dimensions will convert hwl format to standard lhw(camera) format.
     annotations['dimensions'] = np.array([[float(info) for info in x[8:11]]
                                           for x in content
-                                          ]).reshape(-1, 3)[:, [2, 0, 1]]
+                                          ]).reshape(-1, 3)[:, [2, 0, 1]] #kitti 高度，宽度，和长度 --> 长高宽！！！！
     annotations['location'] = np.array([[float(info) for info in x[11:14]]
                                         for x in content]).reshape(-1, 3)
     annotations['rotation_y'] = np.array([float(x[14])
@@ -159,7 +159,7 @@ def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
 #                                         for x in content]).reshape(-1, 3)
 #     annotations['dimensions'] = np.array([[float(info) for info in x[4:7]] #  表示该车的高度，宽度，和长度，单位为米。（H,W,L）
 #                                           for x in content
-#                                           ]).reshape(-1, 3)[:, [0, 2, 1]] # 长宽高位置--> 长度 高度，宽度？？？？
+#                                           ]).reshape(-1, 3)[:, [2, 0, 1]] # 长宽高位置--> 高度，长度 宽度？？？？
 #     annotations['rotation_y'] = np.array([float(x[7]) # 表示车体朝向，绕相机坐标系y轴的弧度值
 #                                           for x in content]).reshape(-1)
 #     # 如果有第9列置信度
@@ -204,7 +204,7 @@ def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt
     # dimensions will convert hwl format to standard lhw(camera) format.
     annotations['dimensions'] = np.array([[float(info) for info in x[8:11]]
                                           for x in content
-                                          ]).reshape(-1, 3)[:, [2, 0, 1]]
+                                          ]).reshape(-1, 3)[:, [0, 2, 1]] # 高长宽 #长宽高 --> 长高宽！！！！！！
     annotations['location'] = np.array([[float(info) for info in x[11:14]]
                                         for x in content]).reshape(-1, 3)
     annotations['rotation_y'] = np.array([float(x[14])
