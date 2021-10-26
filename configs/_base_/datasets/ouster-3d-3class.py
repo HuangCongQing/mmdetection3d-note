@@ -109,7 +109,7 @@ data = dict(
     workers_per_gpu=4, # 每张 GPU 上用于读取数据的进程数
     train=dict(  # 训练数据集配置
         type='RepeatDataset',  # 数据集嵌套，更多细节请参考 https://github.com/open-mmlab/mmdetection/blob/master/mmdet/datasets/dataset_wrappers.py
-        times=2,  # 重复次数
+        times=2,  # 重复次数==========================================
         dataset=dict(
             type=dataset_type, # ousterDataset # 数据集类型
             data_root=data_root, # data_root = 'data/ouster/'

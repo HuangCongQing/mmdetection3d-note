@@ -6,7 +6,7 @@ from mmdet.core.anchor import ANCHOR_GENERATORS
 
 
 @ANCHOR_GENERATORS.register_module()
-class Anchor3DRangeGenerator(object):
+class Anchor3DRangeGenerator(object): # ==========================================
     """3D Anchor Generator by range.
 
     This anchor generator generates anchors by the given range in different
@@ -31,7 +31,7 @@ class Anchor3DRangeGenerator(object):
     """
 
     def __init__(self,
-                 ranges,
+                 ranges, # 范围
                  sizes=[[1.6, 3.9, 1.56]],
                  scales=[1],
                  rotations=[0, 1.5707963],

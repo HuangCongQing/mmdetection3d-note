@@ -166,7 +166,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             tuple[list[torch.Tensor]]: Multi-level class score, bbox \
                 and direction predictions.
         """
-        ans =  multi_apply(self.forward_single, feats)
+        ans =  multi_apply(self.forward_single, feats) # 调用loss_single函数
         return ans # multi_apply函数
 
     def get_anchors(self, featmap_sizes, input_metas, device='cuda'):
@@ -188,7 +188,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             featmap_sizes, device=device)
         anchor_list = [multi_level_anchors for _ in range(num_imgs)]
         return anchor_list
-
+    # 计算 loss！！！！！！
     def loss_single(self, cls_score, bbox_pred, dir_cls_preds, labels,
                     label_weights, bbox_targets, bbox_weights, dir_targets,
                     dir_weights, num_total_samples):
@@ -211,17 +211,17 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             tuple[torch.Tensor]: Losses of class, bbox \
                 and direction, respectively.
         """
-        # classification loss
+        # classification loss 分类loss
         if num_total_samples is None:
             num_total_samples = int(cls_score.shape[0])
         labels = labels.reshape(-1)
         label_weights = label_weights.reshape(-1)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.num_classes)
-        assert labels.max().item() <= self.num_classes
+        assert labels.max().item() <= self.num_classes #labels.max().item() =5    num_classes = 3==========================
         loss_cls = self.loss_cls(
             cls_score, labels, label_weights, avg_factor=num_total_samples)
 
-        # regression loss
+        # regression loss 回归loss
         bbox_pred = bbox_pred.permute(0, 2, 3,
                                       1).reshape(-1, self.box_code_size)
         bbox_targets = bbox_targets.reshape(-1, self.box_code_size)
@@ -237,7 +237,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
         pos_bbox_targets = bbox_targets[pos_inds]
         pos_bbox_weights = bbox_weights[pos_inds]
 
-        # dir loss
+        # dir loss朝向角loss
         if self.use_direction_classifier:
             dir_cls_preds = dir_cls_preds.permute(0, 2, 3, 1).reshape(-1, 2)
             dir_targets = dir_targets.reshape(-1)
@@ -357,7 +357,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
 
         # num_total_samples = None
         losses_cls, losses_bbox, losses_dir = multi_apply(
-            self.loss_single,
+            self.loss_single, # 计算loss
             cls_scores,
             bbox_preds,
             dir_cls_preds,

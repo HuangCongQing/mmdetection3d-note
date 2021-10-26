@@ -91,7 +91,7 @@ class VoxelNet(SingleStage3DDetector):
         x = self.extract_feat(points, img_metas) # 提取特征（feature, backbone,neck）
         outs = self.bbox_head(x) # 检测头
         loss_inputs = outs + (gt_bboxes_3d, gt_labels_3d, img_metas)
-        losses = self.bbox_head.loss(
+        losses = self.bbox_head.loss( # calculate loss
             *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
         return losses
 

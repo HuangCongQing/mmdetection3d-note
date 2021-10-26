@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-10-23 18:33:48
+LastEditTime: 2021-10-25 18:17:24
 FilePath: /mmdetection3d/configs/pointpillars/01dcn_hv_pointpillars_secfpn_6x8_160e_ouster-3d-3class.py
 '''
 _base_ = [
@@ -19,9 +19,9 @@ _base_ = [
 # data_root = 'data/kittiTest/'
 # class_names = ['Pedestrian', 'Cyclist', 'Car']
 # ouster修改
-point_cloud_range =  [0, -40, -3,   60, 40, 7.5] #  ouster配置(x,y,z) 考虑矿车高度7.475神宝MT4400！！x[] y[] z[-3, 10]
+point_cloud_range =  [-30, -40, -3,   60, 40, 7.5] #  ouster配置(x,y,z) 考虑矿车高度7.475神宝MT4400！！x[] y[] z[-3, 10]
 data_root = 'data/ouster/'
-class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
+class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') # 7class
 
 
 # PointPillars adopted a different sampling strategies among classes
@@ -114,6 +114,14 @@ model = dict(
 # optimizer
 lr = 0.001
 optimizer = dict(lr=lr)
+data = dict(
+    samples_per_gpu=4,
+    train=dict(  # 训练数据集配置
+        type='RepeatDataset',
+        # 数据集嵌套，更多细节请参考 https://github.com/open-mmlab/mmdetection/blob/master/mmdet/datasets/dataset_wrappers.py
+        times=8,  # 重复次数
+    ),
+)
 # max_norm=35 is slightly better than 10 for PointPillars in the earlier
 # development of the codebase thus we keep the setting. But we does not
 # specifically tune this parameter.
@@ -121,7 +129,7 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # PointPillars usually need longer schedule than second, we simply double
 # the training schedule. Do remind that since we use RepeatDataset and
 # repeat factor is 2, so we actually train 160 epochs.
-runner = dict(max_epochs=80) # 80个epochs
+runner = dict(max_epochs=40) # 80个epochs
 
 # Use evaluation interval=2 reduce the number of evaluation timese 每隔2轮评测一次
 evaluation = dict(interval=2) # 参数

@@ -437,8 +437,8 @@ def compute_statistics_jit(overlaps,
 #@numba.jit(nopython=True)
 def compute_statistics_jit1(
                            overlaps,
-                           gt_datas,
-                           dt_datas,
+                           gt_datas, # 是一个数，表示当前帧中的物体个数
+                           dt_datas,  # N x 1阵列，表示的是预测得到的N个物体的得分情况score
                            ignored_gt,
                            ignored_det,
                            metric,
@@ -453,14 +453,15 @@ def compute_statistics_jit1(
     det_size = dt_datas.shape[0]
     gt_size = gt_datas
 
-    dt_scores = dt_datas  #获取预测的得分情况
+    dt_scores = dt_datas  #获取预测得到的N个物体的得分情况====================================================
     #dt_scores = dt_datas
 
     assigned_detection = [False] * det_size # 存储是否每个检测都分配给了一个gt。
     ignored_threshold = [False] * det_size    # 如果检测分数低于阈值，则存储数组
     if compute_fp:
-        for i in range(det_size):
-            if (dt_scores[i] < thresh): # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+        for i in range(det_size): # 遍历此帧的每个预测的的得分情况score
+            # print(dt_scores, dt_scores[i], i)
+            if (dt_scores[i] < thresh): # done  # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
                 ignored_threshold[i] = True
     
     NO_DETECTION = -10000000
@@ -523,7 +524,7 @@ def compute_statistics_jit1(
             assigned_detection[det_idx] = True
         elif valid_detection != NO_DETECTION:
             # 这种情况是检测出来了，且是正确的
-            tp += 1
+            tp += 1  # ===========================================================
             # thresholds.append(dt_scores[det_idx])
             thresholds[thresh_idx] = dt_scores[det_idx]
             thresh_idx += 1
@@ -586,19 +587,22 @@ def fused_compute_statistics(overlaps,
     # dc_num = 0
     for i in range(gt_nums.shape[0]):
         for t, thresh in enumerate(thresholds):
-            overlap = overlaps[dt_num:dt_num + dt_nums[i],
-                               gt_num:gt_num + gt_nums[i]]
+            overlap = overlaps[dt_num:dt_num + dt_nums[i], gt_num:gt_num + gt_nums[i]]
 
-            gt_data = gt_datas[gt_num:gt_num + gt_nums[i]]
-            dt_data = dt_datas[dt_num:dt_num + dt_nums[i]]
-            ignored_gt = ignored_gts[gt_num:gt_num + gt_nums[i]]
-            ignored_det = ignored_dets[dt_num:dt_num + dt_nums[i]]
+            # gt_data = gt_datas[gt_num:gt_num + gt_nums[i]]
+            # dt_data = dt_datas[dt_num:dt_num + dt_nums[i]]
+            # ignored_gt = ignored_gts[gt_num:gt_num + gt_nums[i]]
+            # ignored_det = ignored_dets[dt_num:dt_num + dt_nums[i]]
             # dontcare = dontcares[dc_num:dc_num + dc_nums[i]]
+            gt_data = gt_datas[i] # 修改！！！！！！！！！！！！==========================
+            dt_data = dt_datas[i]
+            ignored_gt = ignored_gts[i]
+            ignored_det = ignored_dets[i]
 
             tp, fp, fn, similarity, _ = compute_statistics_jit1( #  =======================================================
                 overlap, # 单个图像的iou值b/n gt和dt
                 gt_data, # # 是一个数，表示当前帧中的物体个数 # N x 5阵列
-                dt_data, # N x 6阵列
+                dt_data, # N x 6阵列？？？？？？？？？
                 ignored_gt,# 长度N数组，-1、0、1
                 ignored_det,# 长度N数组，-1、0、1
                 # dontcare,
@@ -613,6 +617,7 @@ def fused_compute_statistics(overlaps,
             pr[t, 2] += fn
             if similarity != -1:
                 pr[t, 3] += similarity
+                
         gt_num += gt_nums[i]
         dt_num += dt_nums[i]
         # dc_num += dc_nums[i]
@@ -818,7 +823,8 @@ def eval_class(gt_annos,
     #     num_parts = num_examples
     split_parts = get_split_parts(num_examples, num_parts) # 
 
-    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 计算iou（gt和dt互换了以下！！！）=======================================
+    #计算iou
+    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 1 计算iou（函数里面gt和dt互换了以下！！！）=======================================
     overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
     N_SAMPLE_PTS = 41
 
@@ -827,31 +833,31 @@ def eval_class(gt_annos,
     num_minoverlap = len(min_overlaps)
     num_class = len(current_classes)
     num_difficulty = len(difficultys)
-    precision = np.zeros(
-        [num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
-    recall = np.zeros(
-        [num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
+    #初始化precision，recall，aos
+    precision = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
+    recall = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
     aos = np.zeros([num_class, num_difficulty, num_minoverlap, N_SAMPLE_PTS])
+    
     # 每个类别
     for m, current_class in enumerate(current_classes):
         # 每个难度
         for idx_l, difficulty in enumerate(difficultys):
-            rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty) # 准备数据==================================================
+            rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty) # 2 准备数据==================================================
             # (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, dontcares, total_dc_num, total_num_valid_gt) = rets
             (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, total_num_valid_gt) = rets
             # 运行两次，首先进行中等难度的总体设置，然后进行简单设置。
             for k, min_overlap in enumerate(min_overlaps[:, metric, m]):
                 thresholdss = []
                 for i in range(len(gt_annos)):
-                    rets = compute_statistics_jit( # 计算====================================
+                    rets = compute_statistics_jit( # 3 计算tp, fp, fn, similarity, thresholds====================================
                         overlaps[i],
-                        gt_datas_list[i],
-                        dt_datas_list[i],
-                        ignored_gts[i],
-                        ignored_dets[i],
+                        gt_datas_list[i],      # 是一个数，表示当前帧中的物体个数  19帧  [1, 2, 3, 3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                        dt_datas_list[i], # N x 1阵列，表示的是预测得到的N个物体的得分情况 举例： [[0.9999982 ], [0.999997  ], [0.99999654], [0.99999547], [0.99999547]]
+                        ignored_gts[i],   # 长度N数组，-1、0
+                        ignored_dets[i],     # 长度N数组，-1、0
                         # dontcares[i],
-                        metric,
-                        min_overlap=min_overlap,
+                        metric,          # 0, 1, 或 2 (bbox, bev, 3d)
+                        min_overlap=min_overlap,      # 浮动最小IOU阈值为正
                         thresh=0.0,
                         compute_fp=False)
                     tp, fp, fn, similarity, thresholds = rets # ======================================
@@ -1027,9 +1033,9 @@ def ouster_eval(gt_annos,
     #                         [0.5, 0.25, 0.25, 0.5, 0.25],
     #                         [0.5, 0.25, 0.25, 0.5, 0.25]])
     # min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
-    overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7,0.5,0.5,0.5], # ncrease
-                            [0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
-                            [0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5]])
+    overlap_0_7 = np.array([[0.2, 0.5, 0.5, 0.7,0.5,0.5,0.5], # ncrease
+                            [0.2, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
+                            [0.2, 0.5, 0.5, 0.7, 0.5,0.5,0.5]])
     overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25]])
