@@ -129,7 +129,7 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # PointPillars usually need longer schedule than second, we simply double
 # the training schedule. Do remind that since we use RepeatDataset and
 # repeat factor is 2, so we actually train 160 epochs.
-runner = dict(max_epochs=40) # 80个epochs
+runner = dict(max_epochs=80) # 80个epochs
 
 # Use evaluation interval=2 reduce the number of evaluation timese 每隔2轮评测一次
 evaluation = dict(interval=2) # 参数
