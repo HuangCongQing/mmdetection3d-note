@@ -4,8 +4,8 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-10-16 21:35:10
-LastEditTime: 2021-10-16 21:35:10
-FilePath: /mmdetection3d/mmdet3d/core/evaluation/kitti_utils/eval3.py
+LastEditTime: 2021-10-26 16:30:28
+FilePath: /mmdetection3d/mmdet3d/core/evaluation/kitti_utils/eval2.py
 '''
 import io as sysio
 
@@ -1191,7 +1191,7 @@ def get_coco_eval_result1(gt_annos, dt_annos, current_classes):
     return result
 
 
-
+# main 开始函数
 def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict=None):
     overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7,0.5, 0.7, 0.5, 0.5, 0.7], 
                                                         [0.7, 0.5, 0.5, 0.7, 0.5, 0.7, 0.5, 0.5, 0.7],

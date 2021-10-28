@@ -617,7 +617,7 @@ def fused_compute_statistics(overlaps,
             pr[t, 2] += fn
             if similarity != -1:
                 pr[t, 3] += similarity
-                
+
         gt_num += gt_nums[i]
         dt_num += dt_nums[i]
         # dc_num += dc_nums[i]
@@ -789,7 +789,7 @@ def _prepare_data(gt_annos, dt_annos, current_class, difficulty):
 #     return (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, dontcares,
 #             total_dc_num, total_num_valid_gt)
 
-# do_eval-->eval_class
+# ouster_eval-->do_eval-->eval_class
 def eval_class(gt_annos,
                dt_annos,
                current_classes,
@@ -824,7 +824,7 @@ def eval_class(gt_annos,
     split_parts = get_split_parts(num_examples, num_parts) # 
 
     #计算iou
-    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 1 计算iou（函数里面gt和dt互换了以下！！！）=======================================
+    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 1 计算iou（函数里面gt和dt互换了以下！！！）metric = 2=======================================
     overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
     N_SAMPLE_PTS = 41
 
@@ -949,7 +949,7 @@ def print_str(value, *arg, sstream=None):
     print(value, *arg, file=sstream)
     return sstream.getvalue()
 
-# do_eval是计算评估结果的重要函数
+# 是计算评估结果的重要函数
 def do_eval(gt_annos,
             dt_annos,
             current_classes,
@@ -959,54 +959,36 @@ def do_eval(gt_annos,
     difficultys = [0, 1, 2]
     mAP_bbox = None
     mAP_aos = None
-    if 'bbox' in eval_types: # 不运行
-        ret = eval_class(
-            gt_annos,
-            dt_annos,
-            current_classes,
-            difficultys,
-            0,
-            min_overlaps,
-            compute_aos=('aos' in eval_types))
-        # ret: [num_class, num_diff, num_minoverlap, num_sample_points]
-        mAP_bbox = get_mAP(ret['precision'])
-        if 'aos' in eval_types:
-            mAP_aos = get_mAP(ret['orientation'])
+    # if 'bbox' in eval_types: # 不运行
+    #     ret = eval_class(
+    #         gt_annos,
+    #         dt_annos,
+    #         current_classes,
+    #         difficultys,
+    #         0,
+    #         min_overlaps,
+    #         compute_aos=('aos' in eval_types))
+    #     # ret: [num_class, num_diff, num_minoverlap, num_sample_points]
+    #     mAP_bbox = get_mAP(ret['precision'])
+    #     if 'aos' in eval_types:
+    #         mAP_aos = get_mAP(ret['orientation'])
 
     mAP_bev = None
-    if 'bev' in eval_types: # 不运行
-        ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 1,
-                         min_overlaps)
-        mAP_bev = get_mAP(ret['precision'])
+    # if 'bev' in eval_types: # 不运行
+    #     ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 1,
+    #                      min_overlaps)
+    #     mAP_bev = get_mAP(ret['precision'])
 
     mAP_3d = None
     # 3D的评测结果=====================================================================
     if '3d' in eval_types:
-        ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 2, # eval_types =2
+        ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 2, # 得到结果 eval_types =2================================
                          min_overlaps)
         mAP_3d = get_mAP(ret['precision'])
     return mAP_bbox, mAP_bev, mAP_3d, mAP_aos
 
 
-def do_coco_style_eval(gt_annos, dt_annos, current_classes, overlap_ranges,
-                       compute_aos):
-    # overlap_ranges: [range, metric, num_class]
-    min_overlaps = np.zeros([10, *overlap_ranges.shape[1:]]) # 都是0
-    for i in range(overlap_ranges.shape[1]):
-        for j in range(overlap_ranges.shape[2]):
-            min_overlaps[:, i, j] = np.linspace(*overlap_ranges[:, i, j])
-    mAP_bbox, mAP_bev, mAP_3d, mAP_aos = do_eval(gt_annos, dt_annos,
-                                                 current_classes, min_overlaps,
-                                                 compute_aos)
-    # ret: [num_class, num_diff, num_minoverlap]
-    mAP_bbox = mAP_bbox.mean(-1)
-    mAP_bev = mAP_bev.mean(-1)
-    mAP_3d = mAP_3d.mean(-1)
-    if mAP_aos is not None:
-        mAP_aos = mAP_aos.mean(-1)
-    return mAP_bbox, mAP_bev, mAP_3d, mAP_aos
-
-# 评测开始 入口=================================================================================================================
+# 评测开始 入口 main=================================================================================================================
 def ouster_eval(gt_annos,
                dt_annos,
                current_classes, #预测的类别
@@ -1039,9 +1021,9 @@ def ouster_eval(gt_annos,
     overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25]])
-
     # 通过下面一行，min_overlaps的形状是(2, 3, 7)的三维数组，7是因为有7个类别
     min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 7]
+
     # class_to_name = { # 分类标签修改
     #     0: 'Car',
     #     1: 'Pedestrian',
@@ -1075,12 +1057,15 @@ def ouster_eval(gt_annos,
     current_classes = current_classes_int
     
     # min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)
+    # 取min_overlaps的前5列，因为有5个类别是需要分类和计算的
+    #得到的min_overlaps的形状：（2,3,5）
     min_overlaps = min_overlaps[:, :, current_classes] # 计算得到当前类的min_overlaps
+
     result = ''
     # check whether alpha is valid
     compute_aos = False
-    pred_alpha = False
-    valid_alpha_gt = False
+    # pred_alpha = False # 用不到
+    # valid_alpha_gt = False
     # for anno in dt_annos: # 遍历每个预测
     #     mask = (anno['alpha'] != -10)
     #     if anno['alpha'][mask].shape[0] != 0:
@@ -1094,7 +1079,7 @@ def ouster_eval(gt_annos,
     # if compute_aos:
     #     eval_types.append('aos') # 是否添加aos！！！！
     
-    # 计算结果的函数do_eval()（后面详细说）
+    # 计算结果的函数（后面详细说）
     mAPbbox, mAPbev, mAP3d, mAPaos = do_eval(gt_annos, dt_annos, # 调用============================================
                                              current_classes, min_overlaps,
                                              eval_types)
