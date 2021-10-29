@@ -36,6 +36,7 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             difficulty :  0
     '''
     # CLASS_NAMES = ['car', 'pedestrian', 'cyclist'] # #类别
+    # CLASS_NAMES = ['Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary', 'Others']
     CLASS_NAMES = ['Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary', 'Others']
 
     #检测难度从易到难，为了检测到同样数目的gt，使最小值减小，最大值增大
@@ -1015,9 +1016,9 @@ def ouster_eval(gt_annos,
     #                         [0.5, 0.25, 0.25, 0.5, 0.25],
     #                         [0.5, 0.25, 0.25, 0.5, 0.25]])
     # min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
-    overlap_0_7 = np.array([[0.2, 0.5, 0.5, 0.7,0.5,0.5,0.5], # ncrease
-                            [0.2, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
-                            [0.2, 0.5, 0.5, 0.7, 0.5,0.5,0.5]])
+    overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7,0.5,0.5,0.5], # ncrease
+                            [0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
+                            [0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5]])
     overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25]])
@@ -1034,10 +1035,10 @@ def ouster_eval(gt_annos,
     class_to_name = { # 分类标签修改   match  overlap_0_7
         0: 'Truck', # important!   ##[[0.7,0.7,0.7],[0.5, 0.5, 0.5]]等于上面数组的：min_overlaps[:,:,0]
         1: 'Auxiliary', # important!
-        2: 'Pedestrian',
+        2: 'Car', # 前移动！！
         3: 'Excavator',
         4: 'Widebody',
-        5: 'Car',
+        5: 'Pedestrian',
         6: 'Others',
     }
     # 将名字和对应的类别号反一下，便于索引
