@@ -161,7 +161,7 @@ class CenterPointBBoxCoder(BaseBBoxCoder):
 
         rot_cosine = self._transpose_and_gather_feat(rot_cosine, inds)
         rot_cosine = rot_cosine.view(batch, self.max_num, 1)
-        rot = torch.atan2(rot_sine, rot_cosine)+1.57 # 
+        rot = torch.atan2(rot_sine, rot_cosine) # +1.57 # 
 
         # height in the bev
         hei = self._transpose_and_gather_feat(hei, inds)

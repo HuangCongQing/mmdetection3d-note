@@ -85,7 +85,7 @@ class DeltaXYZWLHRBBoxCoderOuster(BaseBBoxCoder):
         lg = torch.exp(lt) * la
         wg = torch.exp(wt) * wa
         hg = torch.exp(ht) * ha
-        rg = rt + ra + 1.57 # 修改pi/2
+        rg = rt + ra # + 1.57 # 修改pi/2
         zg = zg - hg / 2
         cgs = [t + a for t, a in zip(cts, cas)]
         return torch.cat([xg, yg, zg, wg, lg, hg, rg, *cgs], dim=-1)
