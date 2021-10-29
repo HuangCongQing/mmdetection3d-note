@@ -51,7 +51,7 @@ def box3d_multiclass_nms(mlvl_bboxes,
     bboxes2d = []
     for i in range(0, num_classes):
         # get bboxes and scores of this class
-        cls_inds = mlvl_scores[:, i] > 0# score_thr # 修改为0========================================================
+        cls_inds = mlvl_scores[:, i] > 0.1# score_thr # 初始0.1 修改为0========================================================
         if not cls_inds.any():
             continue
 

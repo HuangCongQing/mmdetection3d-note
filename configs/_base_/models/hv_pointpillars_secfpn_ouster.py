@@ -17,7 +17,7 @@ model = dict(
     voxel_layer=dict(
         max_num_points=32,  # max_points_per_voxel
         # point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1], # [0, -40, -3,   60, 40, 7.5]  上层已修改
-        point_cloud_range =  [-30, -40, -3,   60, 40, 7.5],
+        point_cloud_range =  [-30, -40, -3, 60, 40, 7.5],
         voxel_size=voxel_size,
         max_voxels=(16000, 40000)  # (training, testing) max_voxels
     ),
@@ -59,9 +59,9 @@ model = dict(
             #     [0, -39.68, -1.78, 70.4, 39.68, -1.78],
             # ],
             ranges=[ # 修改生成anchor的总范围=============================================================================
-                [0, -39.68, -0.37, 70.4, 39.68, -0.37], # (x_min, y_min, z_min, x_max, y_max, z_max).
-                [0, -39.68, -0.47, 70.4, 39.68, -0.47],
-                [0, -39.68, -3.44, 70.4, 39.68, -3.44], # 可参考configs/_base_/models/hv_pointpillars_fpn_nus.py
+                [-30, -40, -0.37, 60, 40, -0.37], # (x_min, y_min, z_min, x_max, y_max, z_max).
+                [-30, -40, -0.47, 60, 40, -0.47],
+                [-30, -40, -3.44, 60, 40, -3.44], # 可参考configs/_base_/models/hv_pointpillars_fpn_nus.py
             ],
             # sizes=[[0.6, 0.8, 1.73], [0.6, 1.76, 1.73], [1.6, 3.9, 1.56]], # ['Pedestrian', 'Cyclist', 'Car'] Anchor size with shape [N, 3], in order of x, y, z.
             # sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], 
