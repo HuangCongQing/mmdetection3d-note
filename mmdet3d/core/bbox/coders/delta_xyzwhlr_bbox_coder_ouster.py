@@ -6,7 +6,7 @@ from mmdet.core.bbox.builder import BBOX_CODERS
 
 
 @BBOX_CODERS.register_module()
-class DeltaXYZWLHRBBoxCoder(BaseBBoxCoder):
+class DeltaXYZWLHRBBoxCoderOuster(BaseBBoxCoder):
     """Bbox Coder for 3D boxes.
 
     Args:
@@ -14,7 +14,7 @@ class DeltaXYZWLHRBBoxCoder(BaseBBoxCoder):
     """
 
     def __init__(self, code_size=7):
-        super(DeltaXYZWLHRBBoxCoder, self).__init__()
+        super(DeltaXYZWLHRBBoxCoderOuster, self).__init__()
         self.code_size = code_size
 
     @staticmethod
@@ -85,7 +85,7 @@ class DeltaXYZWLHRBBoxCoder(BaseBBoxCoder):
         lg = torch.exp(lt) * la
         wg = torch.exp(wt) * wa
         hg = torch.exp(ht) * ha
-        rg = rt + ra + 1.57
+        rg = rt + ra + 1.57 # 修改pi/2
         zg = zg - hg / 2
         cgs = [t + a for t, a in zip(cts, cas)]
         return torch.cat([xg, yg, zg, wg, lg, hg, rg, *cgs], dim=-1)

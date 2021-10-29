@@ -64,11 +64,12 @@ model = dict(
                 [0, -39.68, -3.44, 70.4, 39.68, -3.44], # 可参考configs/_base_/models/hv_pointpillars_fpn_nus.py
             ],
             # sizes=[[0.6, 0.8, 1.73], [0.6, 1.76, 1.73], [1.6, 3.9, 1.56]], # ['Pedestrian', 'Cyclist', 'Car'] Anchor size with shape [N, 3], in order of x, y, z.
+            # sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], 
             sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], # 3D sizes of anchors. class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
             rotations=[0, 1.57],
             reshape_out=False),
         diff_rad_by_sin=True,
-        bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'),
+        bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'), # 修改 DeltaXYZWLHRBBoxCoder为DeltaXYZWLHRBBoxCoderOuster
         # 分类loss，回归loss，朝向loss
         loss_cls=dict(
             type='FocalLoss',
