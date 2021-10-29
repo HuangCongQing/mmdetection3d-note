@@ -18,7 +18,7 @@ class DeltaXYZWLHRBBoxCoderOuster(BaseBBoxCoder):
         self.code_size = code_size
 
     @staticmethod
-    def encode(src_boxes, dst_boxes):
+    def encode(src_boxes, dst_boxes): # Encoder
         """Get box regression transformation deltas (dx, dy, dz, dw, dh, dl,
         dr, dv*) that can be used to transform the `src_boxes` into the
         `target_boxes`.
@@ -55,7 +55,7 @@ class DeltaXYZWLHRBBoxCoderOuster(BaseBBoxCoder):
         return torch.cat([xt, yt, zt, wt, lt, ht, rt, *cts], dim=-1)
 
     @staticmethod
-    def decode(anchors, deltas):
+    def decode(anchors, deltas): # Eecoder解码（预测部分）
         """Apply transformation `deltas` (dx, dy, dz, dw, dh, dl, dr, dv*) to
         `boxes`.
 

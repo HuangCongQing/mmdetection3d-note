@@ -69,7 +69,8 @@ model = dict(
             rotations=[0, 1.57],
             reshape_out=False),
         diff_rad_by_sin=True,
-        bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'), # 修改 DeltaXYZWLHRBBoxCoder为DeltaXYZWLHRBBoxCoderOuster
+        # bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'), 
+        bbox_coder=dict(type='DeltaXYZWLHRBBoxCoderOuster'), # 修改为DeltaXYZWLHRBBoxCoderOuster mmdet3d/core/bbox/coders/delta_xyzwhlr_bbox_coder_ouster.py============================
         # 分类loss，回归loss，朝向loss
         loss_cls=dict(
             type='FocalLoss',
