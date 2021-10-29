@@ -36,8 +36,7 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             difficulty :  0
     '''
     # CLASS_NAMES = ['car', 'pedestrian', 'cyclist'] # #类别
-    # CLASS_NAMES = ['Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary', 'Others']
-    CLASS_NAMES = ['Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary', 'Others']
+    CLASS_NAMES = ['Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others']
 
     #检测难度从易到难，为了检测到同样数目的gt，使最小值减小，最大值增大
     # MIN_HEIGHT = [40, 25, 25] #高度
@@ -992,7 +991,7 @@ def do_eval(gt_annos,
 # 评测开始 入口 main=================================================================================================================
 def ouster_eval(gt_annos,
                dt_annos,
-               current_classes, #预测的类别
+               current_classes, #预测的类别，根据预测的类别显示顺序
                eval_types=[ '3d']):# 只要3D
             #    eval_types=['bbox', 'bev', '3d']):# 只要3D
     """KITTI evaluation.

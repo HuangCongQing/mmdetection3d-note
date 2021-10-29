@@ -65,7 +65,7 @@ model = dict(
             ],
             # sizes=[[0.6, 0.8, 1.73], [0.6, 1.76, 1.73], [1.6, 3.9, 1.56]], # ['Pedestrian', 'Cyclist', 'Car'] Anchor size with shape [N, 3], in order of x, y, z.
             # sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], 
-            sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], # 3D sizes of anchors. class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
+            sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], # 3D sizes of anchors. class_names =  'Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others'   ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') 
             rotations=[0, 1.57],
             reshape_out=False),
         diff_rad_by_sin=True,

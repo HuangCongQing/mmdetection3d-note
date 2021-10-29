@@ -16,7 +16,7 @@ _base_ = [
 # ]
 
 # class_names = ['Pedestrian', 'Cyclist', 'Car']
-class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
+class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others')
 point_cloud_range =  [0, -39.68, -3, 70.4, 39.68, 7.5]
 
 model = dict(

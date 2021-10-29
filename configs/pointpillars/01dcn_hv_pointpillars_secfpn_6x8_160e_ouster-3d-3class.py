@@ -20,8 +20,9 @@ _base_ = [
 # class_names = ['Pedestrian', 'Cyclist', 'Car']
 # ouster修改
 point_cloud_range =  [-30, -40, -3,   60, 40, 7.5] #  ouster配置(x,y,z) 考虑矿车高度7.475神宝MT4400！！x[] y[] z[-3, 10]
-data_root = 'data/ouster/'
-class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') # 7class
+# data_root = 'data/ouster/'
+# class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') # 7class
+class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others') # 7class
 
 
 # PointPillars adopted a different sampling strategies among classes

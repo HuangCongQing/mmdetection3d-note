@@ -51,7 +51,7 @@ class OusterDataset(Custom3DDataset):
             invalid predicted boxes. Default: [0, -40, -3, 70.4, 40, 0.0].
     """
     # CLASSES = ('car', 'pedestrian', 'cyclist') #
-    CLASSES =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others')
+    CLASSES =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others')
     # 修改=============================================================================
     def __init__(self,
                  data_root,
