@@ -353,7 +353,7 @@ class OusterDataset(Custom3DDataset):
                     eval_types = ['bbox']
                 ap_result_str, ap_dict_ = ouster_eval( # 开始评测的入口 ，调用 mmdet3d/core/evaluation/kitti_utils/eval.py
                     gt_annos, # 输入GT======================================================================
-                    result_files_, # 输入预测结果=====================================================================
+                    result_files_, # result_files_ 输入预测结果=====================================================================
                     self.CLASSES,
                     eval_types=eval_types)
                 for ap_type, ap in ap_dict_.items():

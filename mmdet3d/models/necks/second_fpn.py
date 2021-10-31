@@ -87,6 +87,7 @@ class SECONDFPN(BaseModule):
             list[torch.Tensor]: Multi-level feature maps.
         """
         assert len(x) == len(self.in_channels)
+        np.save('input_data.npy', x[0].cpu().detach().numpy())
         ups = [deblock(x[i]) for i, deblock in enumerate(self.deblocks)] # self.deblocks = nn.ModuleList(deblocks)
         # ups = {list:3}
         # 0=(6,128,248,216) = (6, 2C, W/2,H/2)
@@ -97,4 +98,5 @@ class SECONDFPN(BaseModule):
             out = torch.cat(ups, dim=1) #  concat结合 Tensor: (6, 6C, W/2,H/2)
         else:
             out = ups[0]
+        np.save('output_data.npy', out[0].cpu().detach().numpy())
         return [out] # {list: 1}[ Tensor: (6, 6C, W/2,H/2)]. 对三个特征图进行上采样至相同大小，然后进行concatenation

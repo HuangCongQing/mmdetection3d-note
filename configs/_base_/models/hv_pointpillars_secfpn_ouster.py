@@ -83,7 +83,7 @@ model = dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.2)),
     # model training and testing settings
     train_cfg=dict(
-        assigner=[
+        assigner=[ #  'Truck','Auxiliary','Car'
             dict(  # for Pedestrian
                 type='MaxIoUAssigner',
                 iou_calculator=dict(type='BboxOverlapsNearest3D'),
@@ -98,12 +98,19 @@ model = dict(
                 neg_iou_thr=0.35,
                 min_pos_iou=0.35,
                 ignore_iof_thr=-1),
+            # dict(  # for Car
+            #     type='MaxIoUAssigner',
+            #     iou_calculator=dict(type='BboxOverlapsNearest3D'),
+            #     pos_iou_thr=0.6,
+            #     neg_iou_thr=0.45,
+            #     min_pos_iou=0.45,
+            #     ignore_iof_thr=-1),
             dict(  # for Car
                 type='MaxIoUAssigner',
                 iou_calculator=dict(type='BboxOverlapsNearest3D'),
-                pos_iou_thr=0.6,
-                neg_iou_thr=0.45,
-                min_pos_iou=0.45,
+                pos_iou_thr=0.45,
+                neg_iou_thr=0.25,
+                min_pos_iou=0.25,
                 ignore_iof_thr=-1),
         ],
         allowed_border=0,
@@ -112,8 +119,8 @@ model = dict(
     test_cfg=dict(
         use_rotate_nms=True,
         nms_across_levels=False,
-        nms_thr=0.01,
-        score_thr=0.1,
+        nms_thr=0.01, # 去重   nms_thr=0.01,
+        score_thr=0.0001, # 修改阈值 score_thr=0.1,
         min_bbox_size=0,
         nms_pre=100,
         max_num=5) # max_num

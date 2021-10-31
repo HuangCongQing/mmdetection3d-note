@@ -1005,6 +1005,9 @@ def ouster_eval(gt_annos,
     Returns:
         tuple: String and dict of evaluation results.
     """
+    # testing==============
+    # dt_annos = gt_annos
+    
     assert len(eval_types) > 0, 'must contain at least one evaluation type'
     if 'aos' in eval_types:
         assert 'bbox' in eval_types, 'must evaluate bbox when evaluating aos'
@@ -1015,9 +1018,9 @@ def ouster_eval(gt_annos,
     #                         [0.5, 0.25, 0.25, 0.5, 0.25],
     #                         [0.5, 0.25, 0.25, 0.5, 0.25]])
     # min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)  # [2, 3, 5]
-    overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7,0.5,0.5,0.5], # ncrease
-                            [0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
-                            [0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5]])
+    overlap_0_7 = np.array([[0.2, 0.5, 0.5, 0.7,0.5,0.5,0.5], # ncrease
+                            [0.2, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
+                            [0.2, 0.5, 0.5, 0.7, 0.5,0.5,0.5]])
     overlap_0_5 = np.array([[0.7, 0.5, 0.5, 0.7, 0.5,0.5,0.5],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25],
                             [0.5, 0.25, 0.25, 0.5, 0.25, 0.25, 0.25]])
