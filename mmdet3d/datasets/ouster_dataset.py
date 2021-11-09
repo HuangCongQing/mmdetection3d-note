@@ -354,7 +354,7 @@ class OusterDataset(Custom3DDataset):
                 ap_result_str, ap_dict_ = ouster_eval( # 开始评测的入口 ，调用 mmdet3d/core/evaluation/kitti_utils/eval.py
                     gt_annos, # 输入GT======================================================================
                     result_files_, # result_files_ 输入预测结果=====================================================================
-                    self.CLASSES,
+                    self.CLASSES, # CLASSES =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others')
                     eval_types=eval_types)
                 for ap_type, ap in ap_dict_.items():
                     ap_dict[f'{name}/{ap_type}'] = float('{:.4f}'.format(ap))

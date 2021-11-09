@@ -152,7 +152,7 @@ def image_box_overlap(boxes, query_boxes, criterion=-1):
                     overlaps[n, k] = iw * ih / ua
     return overlaps
 
-
+# mmdet3d/core/evaluation/kitti_utils/rotate_iou.py
 def bev_box_overlap(boxes, qboxes, criterion=-1):
     from .rotate_iou import rotate_iou_gpu_eval
     riou = rotate_iou_gpu_eval(boxes, qboxes, criterion)
@@ -161,44 +161,45 @@ def bev_box_overlap(boxes, qboxes, criterion=-1):
 
 @numba.jit(nopython=True, parallel=True)
 def d3_box_overlap_kernel(boxes, qboxes, rinc, criterion=-1):
-    # ONLY support overlap in CAMERA, not lidar.
+    # ONLY support overlap in CAMERA, not lidar.？？？？？？？？？？？？？//
     # TODO: change to use prange for parallel mode, should check the difference
-    N, K = boxes.shape[0], qboxes.shape[0]
-    for i in numba.prange(N):
-        for j in numba.prange(K):
-            if rinc[i, j] > 0:
+    N, K = boxes.shape[0], qboxes.shape[0] #
+    for i in numba.prange(N): # 遍历每个gt box
+        for j in numba.prange(K): # 遍历要检测的图像
+            if rinc[i, j] > 0:  # 如果高度方向有重叠
                 # iw = (min(boxes[i, 1] + boxes[i, 4], qboxes[j, 1] +
                 #         qboxes[j, 4]) - max(boxes[i, 1], qboxes[j, 1]))
+                #  # 重叠部分的高度
                 iw = (
-                    min(boxes[i, 1], qboxes[j, 1]) -
+                    min(boxes[i, 1], qboxes[j, 1]) - # # 重叠部分的最高点（取两个图像各自最高点的最小值）
                     max(boxes[i, 1] - boxes[i, 4],
-                        qboxes[j, 1] - qboxes[j, 4]))
+                        qboxes[j, 1] - qboxes[j, 4])) # 重叠部分的最低点（取两个图像各自最低点的最大值）
 
-                if iw > 0:
-                    area1 = boxes[i, 3] * boxes[i, 4] * boxes[i, 5]
-                    area2 = qboxes[j, 3] * qboxes[j, 4] * qboxes[j, 5]
-                    inc = iw * rinc[i, j]
-                    if criterion == -1:
-                        ua = (area1 + area2 - inc)
+                if iw > 0:# 如果宽度方向有重叠
+                    area1 = boxes[i, 3] * boxes[i, 4] * boxes[i, 5]  # gt box 的面积
+                    area2 = qboxes[j, 3] * qboxes[j, 4] * qboxes[j, 5]  #检测图像的面积
+                    inc = iw * rinc[i, j] # 重叠部分的面积
+                    if criterion == -1: # 默认执行criterion = -1
+                        ua = (area1 + area2 - inc) # 总的面积（交集）
                     elif criterion == 0:
                         ua = area1
                     elif criterion == 1:
                         ua = area2
                     else:
                         ua = inc
-                    rinc[i, j] = inc / ua
+                    rinc[i, j] = inc / ua  # 计算得到iou=================================
                 else:
-                    rinc[i, j] = 0.0
+                    rinc[i, j] = 0.0  # 否则就没有重叠
 
-
+# boxes是GT， 
 def d3_box_overlap(boxes, qboxes, criterion=-1):
-    from .rotate_iou import rotate_iou_gpu_eval
-    rinc = rotate_iou_gpu_eval(boxes[:, [0, 2, 3, 5, 6]],
-                               qboxes[:, [0, 2, 3, 5, 6]], 2)
+    from .rotate_iou import rotate_iou_gpu_eval # mmdet3d/core/evaluation/kitti_utils/rotate_iou.py
+    rinc = rotate_iou_gpu_eval(boxes[:, [0, 2, 3, 5, 6]], # （9，7）  只要5维 ： centers, dims,angles(clockwise when positive) with the shape of [N, 5].
+                               qboxes[:, [0, 2, 3, 5, 6]], 2) # iou = np.zeros((N, K), dtype=np.float32
     d3_box_overlap_kernel(boxes, qboxes, rinc, criterion)
-    return rinc
+    return rinc # (9,9)
 
-# 重新写
+#  TP，FP，TN，FN
 @numba.jit(nopython=True)
 def compute_statistics_jit(overlaps,
                            gt_datas,
@@ -214,7 +215,7 @@ def compute_statistics_jit(overlaps,
     det_size = dt_datas.shape[0]
     gt_size = gt_datas
 
-    dt_scores = dt_datas[:, -1]   #获取预测的得分情况
+    dt_scores = dt_datas[:, -1]   #获取预测的得分情况 最后一列
     #dt_scores = dt_datas
 
     assigned_detection = [False] * det_size # 存储是否每个检测都分配给了一个gt。
@@ -227,23 +228,22 @@ def compute_statistics_jit(overlaps,
     NO_DETECTION = -10000000
     tp, fp, fn, similarity = 0, 0, 0, 0
 
-    thresholds = np.zeros((gt_size,))
+    thresholds = np.zeros((gt_size,)) # 初始化为0
     thresh_idx = 0
     delta = np.zeros((gt_size, ))
     delta_idx = 0
 
-    for i in range(gt_size):
+    for i in range(gt_size): # 遍历GT 
         if ignored_gt[i] == -1:
             #如果不是当前class，如vehicle类别，
             # 则跳过当前循环，继续判断下一个类别
             continue
-
         det_idx = -1            #! 储存对此gt存储的最佳检测的idx
         valid_detection = NO_DETECTION      
         max_overlap = 0
         assigned_ignored_det = False
 
-        # 遍历det中的所有数据，找到一个与真实值最高得分的框
+        # 遍历det中的所有数据，找到一个与真实值最高得分的框！！！
         for j in range(det_size):
             # 如果该数据 无效，则跳过继续判断
             if (ignored_det[j] == -1):
@@ -252,7 +252,6 @@ def compute_statistics_jit(overlaps,
                 continue
             if (ignored_threshold[j]):
                 continue
-
             # 获取 overlaps 中相应的数值
             overlap = overlaps[j, i]
             # 获取这个预测框的得分 
@@ -283,15 +282,14 @@ def compute_statistics_jit(overlaps,
             # 这种情况不存在：ignored_gt[i] == 1
             assigned_detection[det_idx] = True
         elif valid_detection != NO_DETECTION:
-            # 这种情况是检测出来了，且是正确的
+            # 这种情况是检测出来了，且是正确的==================================================
             tp += 1
             # thresholds.append(dt_scores[det_idx])
-            thresholds[thresh_idx] = dt_scores[det_idx]
+            thresholds[thresh_idx] = dt_scores[det_idx]  # 阈值得到
             thresh_idx += 1
             
             assigned_detection[det_idx] = True
-    
-    
+
     if compute_fp:
         #遍历验证det中的每一个：
         for i in range(det_size):
@@ -314,6 +312,7 @@ def compute_statistics_jit(overlaps,
             else:
                 similarity = -1
     return tp, fp, fn, similarity, thresholds[:thresh_idx]
+
 # def compute_statistics_jit(overlaps,
 #                            gt_datas,
 #                            dt_datas,
@@ -433,7 +432,7 @@ def compute_statistics_jit(overlaps,
 #                 similarity = -1
 #     return tp, fp, fn, similarity, thresholds[:thresh_idx]
 
-
+# 计算TP，FP，TN，FN
 #@numba.jit(nopython=True)
 def compute_statistics_jit1(
                            overlaps,
@@ -461,7 +460,7 @@ def compute_statistics_jit1(
     if compute_fp:
         for i in range(det_size): # 遍历此帧的每个预测的的得分情况score
             # print(dt_scores, dt_scores[i], i)
-            if (dt_scores[i] < thresh): # done  # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+            if (dt_scores[i] < thresh): # -1.0？？？？？done  # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
                 ignored_threshold[i] = True
     
     NO_DETECTION = -10000000
@@ -494,7 +493,7 @@ def compute_statistics_jit1(
                 continue
 
             # 获取 overlaps 中相应的数值
-            overlap = overlaps[j, i]
+            overlap = overlaps[j, i] ##！！！！============================================================
             # 获取这个预测框的得分 
             dt_score = dt_scores[j]
             if (not compute_fp and (overlap > min_overlap) and dt_score > valid_detection):
@@ -599,7 +598,7 @@ def fused_compute_statistics(overlaps,
             ignored_gt = ignored_gts[i]
             ignored_det = ignored_dets[i]
 
-            tp, fp, fn, similarity, _ = compute_statistics_jit1( #  =======================================================
+            tp, fp, fn, similarity, _ = compute_statistics_jit1( #  计算tp, fp, fn, similarity, thresholds=======================================================
                 overlap, # 单个图像的iou值b/n gt和dt
                 gt_data, # # 是一个数，表示当前帧中的物体个数 # N x 5阵列
                 dt_data, # N x 6阵列？？？？？？？？？
@@ -608,7 +607,7 @@ def fused_compute_statistics(overlaps,
                 # dontcare,
                 metric,
                 min_overlap=min_overlap,
-                thresh=thresh,
+                thresh=thresh, # 阈值
                 compute_fp=True,
                 compute_aos=compute_aos)
 
@@ -622,8 +621,8 @@ def fused_compute_statistics(overlaps,
         dt_num += dt_nums[i]
         # dc_num += dc_nums[i]
 
-# 计算iou（elif metric == 2:） num_parts=2
-def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=50 num_parts修改为2
+# 计算iou（elif metric == 2:） num_parts=2  # 函数里面gt和dt互换了一下
+def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=50 num_parts修改为2=================================
     """Fast iou algorithm. this function can be used independently to do result
     analysis. Must be used in CAMERA coordinate system.
 
@@ -634,38 +633,35 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
         num_parts (int): A parameter for fast calculate algorithm.
     """
     assert len(gt_annos) == len(dt_annos) #
-    total_dt_num = np.stack([len(a['name']) for a in dt_annos], 0)# [ 1  3  6  5 13]
+    total_dt_num = np.stack([len(a['name']) for a in dt_annos], 0)# 每帧的障碍物数量 [ 1  3  6  5 13]   [1 2 3 3 2 1 2 1 1 1 1 1 1 1 1 1 1 1 1]
     total_gt_num = np.stack([len(a['name']) for a in gt_annos], 0)# [50 50 50 50 50]
     num_examples = len(gt_annos) # 测试集文件数，这里是19
-    split_parts = get_split_parts(num_examples, num_parts) # [2, 2, 1]
+    split_parts = get_split_parts(num_examples, num_parts) # [9, 9, 1]
     parted_overlaps = []
     example_idx = 0
 
     for num_part in split_parts: #  [2, 2, 1] [10,10,10,10,10,1]
         # # 基本上将数据集分成多个部分并进行迭代
-        gt_annos_part = gt_annos[example_idx:example_idx + num_part]
+        gt_annos_part = gt_annos[example_idx:example_idx + num_part] # 分成9 9 1三部分
         dt_annos_part = dt_annos[example_idx:example_idx + num_part]
 
         if metric == 0:  # metric (int): Eval type. 0: bbox, 1: bev, 2: 3d.
             gt_boxes = np.concatenate([a['bbox'] for a in gt_annos_part], 0) # 不会运行
             dt_boxes = np.concatenate([a['bbox'] for a in dt_annos_part], 0)
             overlap_part = image_box_overlap(gt_boxes, dt_boxes)
-        elif metric == 1: # Eval type. 0: bbox, 1: bev, 2: 3d.
-            loc = np.concatenate(
-                [a['location'][:, [0, 2]] for a in gt_annos_part], 0)
-            dims = np.concatenate(
-                [a['dimensions'][:, [0, 2]] for a in gt_annos_part], 0)
+        elif metric == 1: # Eval type.  1: bev================================================
+            loc = np.concatenate([a['location'] for a in gt_annos_part], 0) # ValueError: need at least one array to concatenate
+            dims = np.concatenate([a['dimensions'] for a in gt_annos_part], 0)
             rots = np.concatenate([a['rotation_y'] for a in gt_annos_part], 0)
             gt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
-                                      axis=1)
-            loc = np.concatenate(
-                [a['location'][:, [0, 2]] for a in dt_annos_part], 0)
-            dims = np.concatenate(
-                [a['dimensions'][:, [0, 2]] for a in dt_annos_part], 0)
+                                      axis=1) # (100, 7)
+            loc = np.concatenate([a['location'] for a in dt_annos_part], 0)
+            dims = np.concatenate([a['dimensions'] for a in dt_annos_part], 0)
             rots = np.concatenate([a['rotation_y'] for a in dt_annos_part], 0)
             dt_boxes = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1)
-            overlap_part = bev_box_overlap(gt_boxes,
+            
+            overlap_part = bev_box_overlap(gt_boxes, # rotate_iou_gpu_eval mmdet3d/core/evaluation/kitti_utils/rotate_iou.py
                                            dt_boxes).astype(np.float64)
 
         elif metric == 2: #:  2: 3d.=======================================================
@@ -683,7 +679,7 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
                                           dt_boxes).astype(np.float64) # 计算3d IOU=============================
         else:
             raise ValueError('unknown metric')
-        parted_overlaps.append(overlap_part) # 
+        parted_overlaps.append(overlap_part) # append([9,9])
         ''' (176, 16)
         [array([[0.00019199, 0.        , 0.        , ..., 0.        , 0.        ,
         0.        ],
@@ -717,17 +713,17 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50): # num_parts=
             dt_num_idx += dt_box_num
         example_idx += num_part
 
-    return overlaps, parted_overlaps, total_gt_num, total_dt_num
+    return overlaps, parted_overlaps, total_gt_num, total_dt_num # 返回值
 
 # 准备数据
 def _prepare_data(gt_annos, dt_annos, current_class, difficulty):
-    # # 数据初始化
+    # 数据初始化
     gt_datas_list = []
     dt_datas_list = []
     total_dc_num = []
     ignored_gts, ignored_dets, dontcares = [], [], [] # donecares不需要
     total_num_valid_gt = 0
-    # 遍历每个图像
+    # 遍历每个图像gt
     for i in range(len(gt_annos)):
         #得到的是参数，当前帧的这个类别的 有效物体数，和有效物体的索引列表
         rets = clean_data(gt_annos[i], dt_annos[i], current_class, difficulty) # 函数的调用======================================
@@ -752,14 +748,14 @@ def _prepare_data(gt_annos, dt_annos, current_class, difficulty):
 
         #dt_datas_score = dt_annos[i]["score"]
         dt_datas_score = dt_annos[i]["score"][..., np.newaxis] # KeyError: 'scores' 报错
-        dt_datas_list.append(dt_datas_score)
+        dt_datas_list.append(dt_datas_score) #   
+    # 返回值
     return (
-                    gt_datas_list,  #存放的是 每一帧物体的个数
-                    dt_datas_list,  #存放的是每一帧 不同物体的得分的情况，是（N,1）
-                    ignored_gts, ignored_dets,   #存在
-                    total_num_valid_gt                 #存在
-                    )           
-
+                gt_datas_list,  #存放的是 每一帧物体的个数
+                dt_datas_list,  #存放的是每一帧 不同物体的得分的情况，是（N,1）
+                ignored_gts, ignored_dets,   #存在
+                total_num_valid_gt                 #存在
+                )
 #         gt_datas = np.concatenate(
 #             [gt_annos[i]['bbox'],  # #! bbox index 形状是 N x 4
 #             gt_annos[i]['alpha'][..., np.newaxis]], 1) #! alpha index 形状是 N -> 当np.newaxis, 是 N x 1
@@ -816,16 +812,16 @@ def eval_class(gt_annos,
     #如果验证集gt_annos中的帧数 和 从model中验证出来dt_annos帧的长度不一致，直接报错！
     assert len(gt_annos) == len(dt_annos)
     # 验证集中帧的总数是 num_examples:51
-    num_examples = len(gt_annos) # 
+    num_examples = len(gt_annos) # ouster:19
     #得到的split_parts是一个list的类型，num_parts=5,
     # 意思是将51分为5部分，经过一下函数得到的是：split_parts：[10,10,10,10,10,1]
     # if num_examples < num_parts:
     #     num_parts = num_examples
-    split_parts = get_split_parts(num_examples, num_parts) # 
+    split_parts = get_split_parts(num_examples, num_parts) # [9, 9, 1]
 
     #计算iou
-    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 1 计算iou（函数里面gt和dt互换了以下！！！）metric = 2=======================================
-    overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
+    rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts) # 1 计算iou（函数里面gt和dt互换了一下！！！）metric = 2=======================================
+    overlaps, parted_overlaps, total_dt_num, total_gt_num = rets #
     N_SAMPLE_PTS = 41
 
     #获取min_overlaps的各个的维度，得到的是(2, 3, 5)
@@ -844,10 +840,10 @@ def eval_class(gt_annos,
         for idx_l, difficulty in enumerate(difficultys):
             rets = _prepare_data(gt_annos, dt_annos, current_class, difficulty) # 2 准备数据==================================================
             # (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, dontcares, total_dc_num, total_num_valid_gt) = rets
-            (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, total_num_valid_gt) = rets
+            (gt_datas_list, dt_datas_list, ignored_gts, ignored_dets, total_num_valid_gt) = rets# ==================================
             # 运行两次，首先进行中等难度的总体设置，然后进行简单设置。
             for k, min_overlap in enumerate(min_overlaps[:, metric, m]):
-                thresholdss = []
+                thresholdss = [] # 初始化
                 for i in range(len(gt_annos)):
                     rets = compute_statistics_jit( # 3 计算tp, fp, fn, similarity, thresholds====================================
                         overlaps[i],
@@ -861,7 +857,7 @@ def eval_class(gt_annos,
                         thresh=0.0,
                         compute_fp=False)
                     tp, fp, fn, similarity, thresholds = rets # ======================================
-                    thresholdss += thresholds.tolist()
+                    thresholdss += thresholds.tolist() # [-1. -1. -1. -1. -1. -1.]？？？？？？？？？？？？？？？？？
                 
                 thresholdss = np.array(thresholdss)
                 thresholds = get_thresholds(thresholdss, total_num_valid_gt)
@@ -887,7 +883,7 @@ def eval_class(gt_annos,
                     ignored_gts_part = np.array(ignored_gts[idx:idx+num_part])
 
                     # 再将各部分数据融合===
-                    fused_compute_statistics(
+                    fused_compute_statistics( # 调用compute_statistics_jit1===================
                         parted_overlaps[j],
                         pr,
                         total_gt_num[idx:idx + num_part],
@@ -900,7 +896,7 @@ def eval_class(gt_annos,
                         ignored_dets_part,
                         metric,
                         min_overlap=min_overlap,
-                        thresholds=thresholds,
+                        thresholds=thresholds,  # 阈值
                         # compute_aos=compute_aos
                         )
                     idx += num_part
@@ -952,8 +948,8 @@ def print_str(value, *arg, sstream=None):
 # 是计算评估结果的重要函数
 def do_eval(gt_annos,
             dt_annos,
-            current_classes,
-            min_overlaps, # min_overlaps？？？？？//
+            current_classes, # [0, 1, 2, 3, 4, 5, 6]
+            min_overlaps, # min_overlaps(2,3,7)//
             eval_types=['3d']): # 修改      # eval_types=['bbox', 'bev', '3d']):
     # min_overlaps: [num_minoverlap, metric, num_class]
     difficultys = [0, 1, 2]
@@ -973,13 +969,13 @@ def do_eval(gt_annos,
     #     if 'aos' in eval_types:
     #         mAP_aos = get_mAP(ret['orientation'])
 
-    mAP_bev = None
-    # if 'bev' in eval_types: # 不运行
-    #     ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 1,
-    #                      min_overlaps)
-    #     mAP_bev = get_mAP(ret['precision'])
+    mAP_bev = None # 初始化
+    if 'bev' in eval_types: # 不运行
+        ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 1, # 1 bev
+                         min_overlaps)
+        mAP_bev = get_mAP(ret['precision'])
 
-    mAP_3d = None
+    mAP_3d = None # 初始化
     # 3D的评测结果=====================================================================
     if '3d' in eval_types:
         ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 2, # 得到结果 eval_types =2================================
@@ -992,7 +988,7 @@ def do_eval(gt_annos,
 def ouster_eval(gt_annos,
                dt_annos,
                current_classes, #预测的类别，根据预测的类别显示顺序
-               eval_types=[ '3d']):# 只要3D
+               eval_types=['bev', '3d']):# 只要3D
             #    eval_types=['bbox', 'bev', '3d']):# 只要3D
     """KITTI evaluation.
     Args:
@@ -1005,8 +1001,6 @@ def ouster_eval(gt_annos,
     Returns:
         tuple: String and dict of evaluation results.
     """
-    # testing==============
-    # dt_annos = gt_annos
     
     assert len(eval_types) > 0, 'must contain at least one evaluation type'
     if 'aos' in eval_types:
@@ -1043,7 +1037,7 @@ def ouster_eval(gt_annos,
         5: 'Pedestrian',
         6: 'Others',
     }
-    # 将名字和对应的类别号反一下，便于索引
+    # 将名字和对应的类别号反一下，便于索引 {'Truck': 0, 'Auxiliary': 1, 'Car': 2, 'Excavator': 3, 'Widebody': 4, 'Pedestrian': 5, 'Others': 6}
     name_to_class = {v: n for n, v in class_to_name.items()}
 
     if not isinstance(current_classes, (list, tuple)):
@@ -1057,12 +1051,12 @@ def ouster_eval(gt_annos,
         else:
             current_classes_int.append(curcls)
     #当前的类别变成了含有数字的列表   current_classes=[ 0,1,2]
-    current_classes = current_classes_int
+    current_classes = current_classes_int # [0, 1, 2, 3, 4, 5, 6]
     
     # min_overlaps = np.stack([overlap_0_7, overlap_0_5], axis=0)
     # 取min_overlaps的前5列，因为有5个类别是需要分类和计算的
     #得到的min_overlaps的形状：（2,3,5）
-    min_overlaps = min_overlaps[:, :, current_classes] # 计算得到当前类的min_overlaps
+    min_overlaps = min_overlaps[:, :, current_classes] #   计算得到当前类的min_overlaps
 
     result = ''
     # check whether alpha is valid
@@ -1083,43 +1077,51 @@ def ouster_eval(gt_annos,
     #     eval_types.append('aos') # 是否添加aos！！！！
     
     # 计算结果的函数（后面详细说）
+
+    # testing==============
+    dt_annos = gt_annos  #测试
+    for i in range(len(dt_annos)):
+        dt_annos[i]['score'] = dt_annos[i]['score'] + 2.0
+    # test End
+
     mAPbbox, mAPbev, mAP3d, mAPaos = do_eval(gt_annos, dt_annos, # 调用============================================
                                              current_classes, min_overlaps,
                                              eval_types)
-    #打印结果
+    #打印结果=================================================================================
     ret_dict = {}
     difficulty = ['easy', 'moderate', 'hard']
-    for j, curcls in enumerate(current_classes):
+    # for j, curcls in enumerate(current_classes): # 修改，只要前三个类别
+    for j, curcls in enumerate(current_classes[0:3]): # 修改，只要前三个类别
         # mAP threshold array: [num_minoverlap, metric, class]
         # mAP result: [num_class, num_diff, num_minoverlap]
         curcls_name = class_to_name[curcls]
         for i in range(min_overlaps.shape[0]):
             # prepare results for print
             result += ('{} AP@{:.2f}, {:.2f}, {:.2f}:\n'.format(
-                curcls_name, *min_overlaps[i, :, j]))
+                curcls_name, *min_overlaps[i, :, j])) # Truck AP@0.20, 0.20, 0.20:
             if mAPbbox is not None:
                 result += 'bbox AP:{:.4f}, {:.4f}, {:.4f}\n'.format(
                     *mAPbbox[j, :, i])
             if mAPbev is not None:
-                result += 'bev  AP:{:.4f}, {:.4f}, {:.4f}\n'.format(
+                result += 'bev  AP:{:.4f}, {:.4f}, {:.4f}\n'.format( # 也需要哈
                     *mAPbev[j, :, i])
             if mAP3d is not None:
-                result += '3d   AP:{:.4f}, {:.4f}, {:.4f}\n'.format(
+                result += '3d   AP:{:.4f}, {:.4f}, {:.4f}\n'.format( # 3d   AP:6.8182, 6.8182, 6.8182
                     *mAP3d[j, :, i])
 
             if compute_aos:
                 result += 'aos  AP:{:.2f}, {:.2f}, {:.2f}\n'.format(
                     *mAPaos[j, :, i])
-
             # prepare results for logger
             for idx in range(3):
                 if i == 0:
                     postfix = f'{difficulty[idx]}_strict'
                 else:
                     postfix = f'{difficulty[idx]}_loose'
-                prefix = f'KITTI/{curcls_name}'
+                # prefix = f'KITTI/{curcls_name}'
+                prefix = f'Ouster/{curcls_name}'  # ouster
                 if mAP3d is not None:
-                    ret_dict[f'{prefix}_3D_{postfix}'] = mAP3d[j, idx, i]
+                    ret_dict[f'{prefix}_3D_{postfix}'] = mAP3d[j, idx, i] # 只要mAP3d
                 if mAPbev is not None:
                     ret_dict[f'{prefix}_BEV_{postfix}'] = mAPbev[j, idx, i]
                 if mAPbbox is not None:
@@ -1137,7 +1139,7 @@ def ouster_eval(gt_annos,
             result += 'bev  AP:{:.4f}, {:.4f}, {:.4f}\n'.format(*mAPbev[:, 0])
         if mAP3d is not None: # ==============================================
             mAP3d = mAP3d.mean(axis=0)
-            result += '3d   AP:{:.4f}, {:.4f}, {:.4f}\n'.format(*mAP3d[:, 0])
+            result += '3d   AP:{:.4f}, {:.4f}, {:.4f}\n'.format(*mAP3d[:, 0]) # 只运行这一行
         if compute_aos:
             mAPaos = mAPaos.mean(axis=0)
             result += 'aos  AP:{:.2f}, {:.2f}, {:.2f}\n'.format(*mAPaos[:, 0])
@@ -1146,7 +1148,7 @@ def ouster_eval(gt_annos,
         for idx in range(3):
             postfix = f'{difficulty[idx]}'
             if mAP3d is not None:
-                ret_dict[f'KITTI/Overall_3D_{postfix}'] = mAP3d[idx, 0] # ==========================
+                ret_dict[f'KITTI/Overall_3D_{postfix}'] = mAP3d[idx, 0] # 只运行这一行==========================
             if mAPbev is not None:
                 ret_dict[f'KITTI/Overall_BEV_{postfix}'] = mAPbev[idx, 0]
             if mAPbbox is not None:
