@@ -4,7 +4,7 @@ Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-09-12 11:16:43
-LastEditTime: 2021-10-26 14:55:11
+LastEditTime: 2021-11-01 14:22:02
 FilePath: /mmdetection3d/configs/_base_/models/hv_pointpillars_secfpn_ouster.py
 '''
 
@@ -110,7 +110,7 @@ model = dict(
                 iou_calculator=dict(type='BboxOverlapsNearest3D'),
                 pos_iou_thr=0.45,
                 neg_iou_thr=0.25,
-                min_pos_iou=0.25,
+                min_pos_iou=0.25,# 修改
                 ignore_iof_thr=-1),
         ],
         allowed_border=0,

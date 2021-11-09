@@ -1184,7 +1184,7 @@ def get_coco_eval_result1(gt_annos, dt_annos, current_classes):
     return result
 
 
-# 入口 等同于def  kitti_eval()   ouster_eval()
+# 入口 等同于def  kitti_eval()   ouster_eval() main
 def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict=None):
     overlap_0_7 = np.array([[0.7, 0.5, 0.5, 0.7,0.5, 0.7, 0.5, 0.5, 0.7], 
                                                         [0.7, 0.5, 0.5, 0.7, 0.5, 0.7, 0.5, 0.5, 0.7],

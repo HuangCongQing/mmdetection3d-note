@@ -703,7 +703,12 @@ def kitti_eval(gt_annos,
     compute_aos = (pred_alpha and valid_alpha_gt)
     if compute_aos:
         eval_types.append('aos') # 是否添加aos
-
+    # testing==============
+    # dt_annos = gt_annos  #测试
+    # for i in range(len(dt_annos)):
+    #     dt_annos[i]['score'] = dt_annos[i]['score'] + 2.0
+    # test End
+    # dt scores:[0.36281663 0.2523177  0.60648835 0.4488404  0.3886221  0.3003821, 0.28977636 0.24671149 0.2339859  0.21428724]
     mAPbbox, mAPbev, mAP3d, mAPaos = do_eval(gt_annos, dt_annos,
                                              current_classes, min_overlaps,
                                              eval_types)
