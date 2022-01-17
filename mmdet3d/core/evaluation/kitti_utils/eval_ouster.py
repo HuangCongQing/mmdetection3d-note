@@ -1079,7 +1079,7 @@ def ouster_eval(gt_annos,
     # 计算结果的函数（后面详细说）
 
     # testing==============
-    dt_annos = gt_annos  #测试
+    # dt_annos = gt_annos  #测试
     for i in range(len(dt_annos)):
         dt_annos[i]['score'] = dt_annos[i]['score'] + 2.0
     # test End

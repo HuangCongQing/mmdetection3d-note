@@ -69,15 +69,15 @@ test_pipeline = [
         flip=False,
         transforms=[
             dict(
-                type='GlobalRotScaleTrans',
+                type='GlobalRotScaleTrans', # 全局的旋转、噪声平移、缩放、
                 rot_range=[0, 0],
                 scale_ratio_range=[1., 1.],
                 translation_std=[0, 0, 0]),
-            dict(type='RandomFlip3D'),
+            dict(type='RandomFlip3D'),      # 水平放心、垂直方向的翻转？
             dict(
-                type='PointsRangeFilter', point_cloud_range=point_cloud_range),
+                type='PointsRangeFilter', point_cloud_range=point_cloud_range),     # 点云直通滤波
             dict(
-                type='DefaultFormatBundle3D',
+                type='DefaultFormatBundle3D',       # 格式转换
                 class_names=class_names,
                 with_label=False),
             dict(type='Collect3D', keys=['points'])

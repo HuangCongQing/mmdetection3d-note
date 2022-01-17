@@ -86,9 +86,18 @@ class SECONDFPN(BaseModule):
         Returns:
             list[torch.Tensor]: Multi-level feature maps.
         """
+        # print('-----------------------')
+        # print(len(x))
+        # print(x[0].shape)
+        # print(x[1].shape)
+        # print(x[2].shape)
         assert len(x) == len(self.in_channels)
         np.save('input_data.npy', x[0].cpu().detach().numpy())
         ups = [deblock(x[i]) for i, deblock in enumerate(self.deblocks)] # self.deblocks = nn.ModuleList(deblocks)
+        # print(len(ups))
+        # print(ups[0].shape)
+        # print(ups[1].shape)
+        # print(ups[2].shape)
         # ups = {list:3}
         # 0=(6,128,248,216) = (6, 2C, W/2,H/2)
         # 1=(6,128,248,216) = (6, 2C, W/2,H/2)
@@ -96,6 +105,7 @@ class SECONDFPN(BaseModule):
 
         if len(ups) > 1:
             out = torch.cat(ups, dim=1) #  concat结合 Tensor: (6, 6C, W/2,H/2)
+            # print(out.shape)
         else:
             out = ups[0]
         np.save('output_data.npy', out[0].cpu().detach().numpy())

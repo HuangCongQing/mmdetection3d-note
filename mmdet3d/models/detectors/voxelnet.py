@@ -99,12 +99,18 @@ class VoxelNet(SingleStage3DDetector):
         """Test function without augmentaiton."""
         x = self.extract_feat(points, img_metas)
         outs = self.bbox_head(x)
+        # print(len(outs)) # 3
+        # print(outs[0][0].shape)  # torch.Size([1, 2, 248, 216])
+        # print(outs[1][0].shape)  # torch.Size([1, 14, 248, 216])
+        # print(outs[2][0].shape)  # torch.Size([1, 4, 248, 216])
         bbox_list = self.bbox_head.get_bboxes( # mmdet3d/models/dense_heads/anchor3d_head.py
             *outs, img_metas, rescale=rescale)
         bbox_results = [
             bbox3d2result(bboxes, scores, labels) # mmdet3d/core/bbox/transforms.py
             for bboxes, scores, labels in bbox_list
         ]
+        # print(len(bbox_results))
+        # print(bbox_results[0])
         return bbox_results
 
     def aug_test(self, points, img_metas, imgs=None, rescale=False):

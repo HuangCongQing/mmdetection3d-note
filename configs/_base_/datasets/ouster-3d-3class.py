@@ -105,7 +105,7 @@ eval_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=6, # 单张 GPU 上的样本数
+    samples_per_gpu=4, # 单张 GPU 上的样本数
     workers_per_gpu=4, # 每张 GPU 上用于读取数据的进程数
     train=dict(  # 训练数据集配置
         type='RepeatDataset',  # 数据集嵌套，更多细节请参考 https://github.com/open-mmlab/mmdetection/blob/master/mmdet/datasets/dataset_wrappers.py

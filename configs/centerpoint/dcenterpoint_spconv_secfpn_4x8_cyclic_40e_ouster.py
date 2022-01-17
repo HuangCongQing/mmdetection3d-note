@@ -118,7 +118,7 @@ test_pipeline = [
         ])
 ]
 
-data = dict(samples_per_gpu=8,
+data = dict(samples_per_gpu=2,
     train=dict(times=8, dataset=dict(pipeline=train_pipeline, classes=class_names)),
     val=dict(pipeline=test_pipeline, classes=class_names),
     test=dict(pipeline=test_pipeline, classes=class_names))

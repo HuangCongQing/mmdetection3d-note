@@ -85,6 +85,9 @@ class SECOND(BaseModule):
         """
         outs = []
         for i in range(len(self.blocks)):
+            # print(self.blocks[i]) # 
+            # print(x.shape)          # torch.Size([1, 64, 496, 432]) torch.Size([1, 64, 248, 216]) torch.Size([1, 128, 124, 108])
             x = self.blocks[i](x)
+            # print(x.shape)          # torch.Size([1, 64, 248, 216]) torch.Size([1, 128, 124, 108]) torch.Size([1, 256, 62, 54])
             outs.append(x)
         return tuple(outs)  # 输出元组类型

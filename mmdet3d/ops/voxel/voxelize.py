@@ -38,6 +38,8 @@ class _Voxelization(Function):
             num_points_per_voxel: [M] int32 tensor. Only returned when
                 max_points != -1.
         """
+        # print(points.size(0))
+        # print(points.size(1))
         if max_points == -1 or max_voxels == -1:
             coors = points.new_zeros(size=(points.size(0), 3), dtype=torch.int)
             dynamic_voxelize(points, coors, voxel_size, coors_range, 3)
@@ -55,6 +57,12 @@ class _Voxelization(Function):
             voxels_out = voxels[:voxel_num]
             coors_out = coors[:voxel_num]
             num_points_per_voxel_out = num_points_per_voxel[:voxel_num]
+            # print(voxels_out.size(0))
+            # print(voxels_out.size(1))
+            # print(voxels_out.size(2))
+            # print(coors_out.size(0))
+            # print(coors_out.size(1))
+            # print(num_points_per_voxel_out.size(0))
             return voxels_out, coors_out, num_points_per_voxel_out
 
 
@@ -108,6 +116,8 @@ class Voxelization(nn.Module):
             max_voxels = self.max_voxels[0]
         else:
             max_voxels = self.max_voxels[1]
+
+        # print(input.size())
 
         return voxelization(input, self.voxel_size, self.point_cloud_range,
                             self.max_num_points, max_voxels)

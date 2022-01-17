@@ -11,7 +11,7 @@ from mmdet.core import (build_anchor_generator, build_assigner,
 from mmdet.models import HEADS
 from ..builder import build_loss
 from .train_mixins import AnchorTrainMixin
-
+from mmcv.cnn import build_conv_layer
 
 @HEADS.register_module()
 class Anchor3DHead(BaseModule, AnchorTrainMixin):
@@ -130,14 +130,19 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
 
     def _init_layers(self):
         """Initialize neural network layers of the head."""
+        # print(self.num_anchors)
+        # print(self.num_classes)
+        # print(self.feat_channels)
+        # print(self.box_code_size)
         self.cls_out_channels = self.num_anchors * self.num_classes
+        # print(self.cls_out_channels)
         self.conv_cls = nn.Conv2d(self.feat_channels, self.cls_out_channels, 1)
         self.conv_reg = nn.Conv2d(self.feat_channels,
                                   self.num_anchors * self.box_code_size, 1)
         if self.use_direction_classifier:
             self.conv_dir_cls = nn.Conv2d(self.feat_channels,
                                           self.num_anchors * 2, 1)
-
+                                          
     def forward_single(self, x):
         """Forward function on a single-scale feature map.
 
@@ -153,6 +158,9 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
         dir_cls_preds = None
         if self.use_direction_classifier:
             dir_cls_preds = self.conv_dir_cls(x) # 朝向
+        # print(cls_score.shape)
+        # print(bbox_pred.shape)
+        # print(dir_cls_preds.shape)
         return cls_score, bbox_pred, dir_cls_preds # 2块： 分类 回归，朝向
 
     def forward(self, feats):
@@ -167,6 +175,10 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
                 and direction predictions.
         """
         ans =  multi_apply(self.forward_single, feats) # 调用loss_single函数
+        # print(len(ans)) # 3
+        # print(ans[0][0].shape)  # torch.Size([1, 2, 248, 216])
+        # print(ans[1][0].shape)  # torch.Size([1, 14, 248, 216])
+        # print(ans[2][0].shape)  # torch.Size([1, 4, 248, 216])
         return ans # multi_apply函数
 
     def get_anchors(self, featmap_sizes, input_metas, device='cuda'):
@@ -182,6 +194,7 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
                 of each image.
         """
         num_imgs = len(input_metas)
+        # print(num_imgs)   # why 6? 参考 kitti-3d-3class.py samples_per_gpu=6, # 单张 GPU 上的样本数
         # since feature map sizes of all images are the same, we only compute
         # anchors for one time
         multi_level_anchors = self.anchor_generator.grid_anchors(
@@ -331,11 +344,20 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
                 - loss_dir (list[torch.Tensor]): Direction classification \
                     losses.
         """
+        # print(len(cls_scores))
+        # print(cls_scores[0].shape)
+        # print(bbox_preds[0].shape)
+        # print(dir_cls_preds[0].shape)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+        # print(featmap_sizes)    # [torch.Size([248, 216])]
         assert len(featmap_sizes) == self.anchor_generator.num_levels
         device = cls_scores[0].device
+        # print(input_metas)
         anchor_list = self.get_anchors(
             featmap_sizes, input_metas, device=device)
+        # print(len(anchor_list)) #6
+        # print(len(anchor_list[0]))
+        # print(anchor_list[0][0].shape)  # torch.Size([1, 248, 216, 3, 2, 7])
         label_channels = self.cls_out_channels if self.use_sigmoid_cls else 1
         cls_reg_targets = self.anchor_target_3d(
             anchor_list,
@@ -392,18 +414,37 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
         Returns:
             list[tuple]: Prediction resultes of batches.
         """
+        # print(len(cls_scores))
+        # print(len(bbox_preds))
+        # print(len(dir_cls_preds))     # 对应voxelnet.py中的 *outs ，* C++用法？
+        # print(cls_scores[0].shape)
+        # print(bbox_preds[0].shape)
+        # print(dir_cls_preds[0].shape) 
+        # 
+        # torch.Size([1, 2, 248, 216])
+        # torch.Size([1, 14, 248, 216])
+        # torch.Size([1, 4, 248, 216])
         assert len(cls_scores) == len(bbox_preds)
         assert len(cls_scores) == len(dir_cls_preds)
         num_levels = len(cls_scores)
         featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
+        # print(len(featmap_sizes))
+        # print(featmap_sizes)        # [torch.Size([248, 216])]
         device = cls_scores[0].device
+        # print(type(self.anchor_generator))
         mlvl_anchors = self.anchor_generator.grid_anchors(
             featmap_sizes, device=device)
+        # print(len(mlvl_anchors))
         mlvl_anchors = [
             anchor.reshape(-1, self.box_code_size) for anchor in mlvl_anchors
         ]
 
+        # print(self.box_code_size)    #7
+        # print(len(mlvl_anchors))
+        # print(mlvl_anchors[0].shape)    # torch.Size([107136, 7]) 107136 = 248*216*2
+
         result_list = []
+        # print(input_metas[0])
         for img_id in range(len(input_metas)):
             cls_score_list = [
                 cls_scores[i][img_id].detach() for i in range(num_levels)
@@ -450,6 +491,15 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
                 - scores (torch.Tensor): Class score of each bbox.
                 - labels (torch.Tensor): Label of each bbox.
         """
+
+        # print(cls_scores[0].shape)
+        # print(bbox_preds[0].shape)
+        # print(dir_cls_preds[0].shape)
+        # print(mlvl_anchors[0].shape)
+        # torch.Size([2, 248, 216])
+        # torch.Size([14, 248, 216])
+        # torch.Size([4, 248, 216])
+        # torch.Size([107136, 7])
         cfg = self.test_cfg if cfg is None else cfg
         assert len(cls_scores) == len(bbox_preds) == len(mlvl_anchors)
         mlvl_bboxes = []
@@ -457,20 +507,24 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
         mlvl_dir_scores = []
         for cls_score, bbox_pred, dir_cls_pred, anchors in zip(
                 cls_scores, bbox_preds, dir_cls_preds, mlvl_anchors):
+            # print(anchors.shape)    # torch.Size([107136, 7])
             assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
             assert cls_score.size()[-2:] == dir_cls_pred.size()[-2:]
+            # print(dir_cls_pred.shape)   # torch.Size([4, 248, 216]
             dir_cls_pred = dir_cls_pred.permute(1, 2, 0).reshape(-1, 2)
             dir_cls_score = torch.max(dir_cls_pred, dim=-1)[1]
-
+            # print(dir_cls_pred.shape)   #torch.Size([107136, 2])
+            # print(dir_cls_score.shape)  #torch.Size([107136])
             cls_score = cls_score.permute(1, 2,
                                           0).reshape(-1, self.num_classes)
+            # print(cls_score.shape)  # torch.Size([107136, 1])
             if self.use_sigmoid_cls:
                 scores = cls_score.sigmoid()
             else:
                 scores = cls_score.softmax(-1)
             bbox_pred = bbox_pred.permute(1, 2,
                                           0).reshape(-1, self.box_code_size)
-
+            # print(bbox_pred.shape)      # torch.Size([107136, 7])
             nms_pre = cfg.get('nms_pre', -1)
             if nms_pre > 0 and scores.shape[0] > nms_pre:
                 if self.use_sigmoid_cls:
@@ -482,7 +536,14 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
                 bbox_pred = bbox_pred[topk_inds, :]
                 scores = scores[topk_inds, :]
                 dir_cls_score = dir_cls_score[topk_inds]
-
+                # print(anchors.shape)
+                # print(bbox_pred.shape)
+                # print(scores.shape)
+                # print(dir_cls_score.shape)
+                # torch.Size([100, 7])
+                # torch.Size([100, 7])
+                # torch.Size([100, 1])
+                # torch.Size([100])
             bboxes = self.bbox_coder.decode(anchors, bbox_pred)
             mlvl_bboxes.append(bboxes)
             mlvl_scores.append(scores)
@@ -493,7 +554,14 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
             mlvl_bboxes, box_dim=self.box_code_size).bev)
         mlvl_scores = torch.cat(mlvl_scores)
         mlvl_dir_scores = torch.cat(mlvl_dir_scores)
-
+        # print(mlvl_bboxes.shape)
+        # print(mlvl_bboxes_for_nms.shape)
+        # print(mlvl_scores.shape)
+        # print(mlvl_dir_scores.shape)
+        # torch.Size([100, 7])
+        # torch.Size([100, 5])
+        # torch.Size([100, 1])
+        # torch.Size([100])
         if self.use_sigmoid_cls:
             # Add a dummy background class to the front when using sigmoid
             padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], 1)

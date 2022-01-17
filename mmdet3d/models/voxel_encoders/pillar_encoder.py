@@ -107,7 +107,9 @@ class PillarFeatureNet(nn.Module):
         # features[:, :, 1] = xy_sqrt # 代替y这一维
         # features = features[:, :, 1:] # 从1维开始   Tensor(35245, 32, 3)
         # 优化结束
-        
+        # print(features.size())  # torch.Size([3945, 32, 4])
+        # print(num_points.size()) # torch.Size([3945])
+        # print(coors.size())     # torch.Size([3945, 4])
         features_ls = [features] # Tensor(35245, 32, 4)
         # Find distance of x, y, and z from cluster center  Pillar内点云算术中心的偏移量
         if self._with_cluster_center:
@@ -116,9 +118,10 @@ class PillarFeatureNet(nn.Module):
                     -1, 1, 1)
             f_cluster = features[:, :, :3] - points_mean # 
             features_ls.append(f_cluster)
-
+            # print(f_cluster)
         # Find distance of x, y, and z from pillar center  点相对于Pillar网格中心(x,y中心坐标)的偏移量。
         dtype = features.dtype
+        # print(coors)
         if self._with_voxel_center:
             if not self.legacy:
                 f_center = torch.zeros_like(features[:, :, :2])
@@ -136,6 +139,7 @@ class PillarFeatureNet(nn.Module):
                 f_center[:, :, 1] = f_center[:, :, 1] - (
                     coors[:, 2].type_as(features).unsqueeze(1) * self.vy +
                     self.y_offset)
+                # print(f_center)
             features_ls.append(f_center) # 保存
 
         if self._with_distance:
@@ -151,10 +155,11 @@ class PillarFeatureNet(nn.Module):
         mask = get_paddings_indicator(num_points, voxel_count, axis=0)
         mask = torch.unsqueeze(mask, -1).type_as(features)
         features *= mask
-
+        # print(features.shape)   # torch.Size([3945, 32, 9])
         for pfn in self.pfn_layers:
             features = pfn(features, num_points)
-
+        # print(features.shape)   # torch.Size([3945, 1, 64])
+        # print(features.squeeze().shape) torch.Size([3945, 64])，.squeeze()移除数组中维度为1的维度
         return features.squeeze() # 去除维数为1的的维度 包含pillar_features，（C, P）的Tensor，特征维度C=64，非空Pillar有P个。
 
 

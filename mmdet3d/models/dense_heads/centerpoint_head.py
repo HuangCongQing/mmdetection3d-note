@@ -4,6 +4,7 @@
 
 import copy
 import numpy as np
+from numpy.core.arrayprint import printoptions
 import torch
 from mmcv.cnn import ConvModule, build_conv_layer
 from mmcv.runner import BaseModule, force_fp32
@@ -117,6 +118,8 @@ class SeparateHead(BaseModule):
                 -heatmap (torch.Tensor): Heatmap with the shape of \
                     [B, N, H, W].
         """
+
+        # print(x.shape)
         ret_dict = dict()
         for head in self.heads:
             if head == 'height':
@@ -346,10 +349,40 @@ class CenterHead(BaseModule):
         ret_dicts = []
 
         x = self.shared_conv(x)
-
+        # print(x.shape)  # torch.Size([8, 64, 248, 216])
+        # print('-----------------------------')
         for task in self.task_heads:
+            # print('******')
+            # print(task)
             ret_dicts.append(task(x))
-
+        # print('--------------------------------')
+        # print(len(ret_dicts))   #3
+        # print(len(ret_dicts[0]))    #5，字典类型，保存5个。
+        # print(type(ret_dicts[0]))       #<class 'dict'>
+        # print(ret_dicts[0].keys())  # 字典键值： dict_keys(['reg', 'height', 'dim', 'rot', 'heatmap'])
+        # print(ret_dicts[0]['reg'].shape)
+        # print(ret_dicts[0]['height'].shape)
+        # print(ret_dicts[0]['dim'].shape)
+        # print(ret_dicts[0]['rot'].shape)
+        # print(ret_dicts[0]['heatmap'].shape)
+        # print(ret_dicts[1].keys())  # 字典键值： dict_keys(['reg', 'height', 'dim', 'rot', 'heatmap'])
+        # print(ret_dicts[1]['reg'].shape)
+        # print(ret_dicts[1]['height'].shape)
+        # print(ret_dicts[1]['dim'].shape)
+        # print(ret_dicts[1]['rot'].shape)
+        # print(ret_dicts[1]['heatmap'].shape)
+        # print(ret_dicts[2].keys())  # 字典键值： dict_keys(['reg', 'height', 'dim', 'rot', 'heatmap'])
+        # print(ret_dicts[2]['reg'].shape)
+        # print(ret_dicts[2]['height'].shape)
+        # print(ret_dicts[2]['dim'].shape)
+        # print(ret_dicts[2]['rot'].shape)
+        # print(ret_dicts[2]['heatmap'].shape)
+        # 以上打印每个键值为：
+        # torch.Size([8, 2, 248, 216])
+        # torch.Size([8, 1, 248, 216])
+        # torch.Size([8, 3, 248, 216])
+        # torch.Size([8, 2, 248, 216])
+        # torch.Size([8, 1, 248, 216])
         return ret_dicts
 
     def forward(self, feats):
@@ -362,6 +395,27 @@ class CenterHead(BaseModule):
         Returns:
             tuple(list[dict]): Output results for tasks.
         """
+        # print('----------------')
+        # print(len(feats))
+        # print(feats[0].shape)     # secondfpn输出的torch.Size([8, 384, 248, 216])
+        # aa = multi_apply(self.forward_single, feats)
+        # print(len(aa))  # 3
+        # print(len(aa[0]))   # 1
+        # print(len(aa[0][0]))    # 5
+        # print(aa[0][0].keys())  # 字典键值： dict_keys(['reg', 'height', 'dim', 'rot', 'heatmap'])
+        # print(aa[0][0]['reg'].shape)
+        # print(aa[0][0]['height'].shape)
+        # print(aa[0][0]['dim'].shape)
+        # print(aa[0][0]['rot'].shape)
+        # print(aa[0][0]['heatmap'].shape)
+        #   输出为：
+        # dict_keys(['reg', 'height', 'dim', 'rot', 'heatmap'])
+        # torch.Size([8, 2, 248, 216])
+        # torch.Size([8, 1, 248, 216])
+        # torch.Size([8, 3, 248, 216])
+        # torch.Size([8, 2, 248, 216])
+        # torch.Size([8, 1, 248, 216])
+        # return aa
         return multi_apply(self.forward_single, feats)
 
     def _gather_feat(self, feat, ind, mask=None):
@@ -458,13 +512,16 @@ class CenterHead(BaseModule):
         # reorganize the gt_dict by tasks
         task_masks = []
         flag = 0
+        # print('--------------------------')
+        # print(self.class_names) #[['Truck'], ['Car'], ['Auxiliary']]
         for class_name in self.class_names:
             task_masks.append([
                 torch.where(gt_labels_3d == class_name.index(i) + flag)
                 for i in class_name
             ])
             flag += len(class_name)
-
+        # print(task_masks)
+        # [[(tensor([0], device='cuda:0'),)], [(tensor([], device='cuda:0', dtype=torch.int64),)], [(tensor([], device='cuda:0', dtype=torch.int64),)]]
         task_boxes = []
         task_classes = []
         flag2 = 0
@@ -615,6 +672,10 @@ class CenterHead(BaseModule):
                 pred, target_box, bbox_weights, avg_factor=(num + 1e-4))
             loss_dict[f'task{task_id}.loss_heatmap'] = loss_heatmap
             loss_dict[f'task{task_id}.loss_bbox'] = loss_bbox
+        
+        # print(len(loss_dict))   # 6
+        # print(loss_dict.keys())
+        # dict_keys(['task0.loss_heatmap', 'task0.loss_bbox', 'task1.loss_heatmap', 'task1.loss_bbox', 'task2.loss_heatmap', 'task2.loss_bbox'])
         return loss_dict
 
     def get_bboxes(self, preds_dicts, img_metas, img=None, rescale=False):

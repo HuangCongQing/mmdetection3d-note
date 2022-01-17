@@ -69,6 +69,25 @@ class CenterPoint(MVXTwoStageDetector):
             dict: Losses of each branch.
         """
         outs = self.pts_bbox_head(pts_feats)
+        # print(len(outs))  # 3
+        # print(len(outs[0]))   # 1
+        # print(len(outs[0][0]))    # 5
+        # print(outs[0][0].keys())  # 字典键值： dict_keys(['reg', 'height', 'dim', 'rot', 'heatmap'])
+        # print(outs[0][0]['reg'].shape)
+        # print(outs[0][0]['height'].shape)
+        # print(outs[0][0]['dim'].shape)
+        # print(outs[0][0]['rot'].shape)
+        # print(outs[0][0]['heatmap'].shape)
+        #   输出：
+        # torch.Size([8, 2, 248, 216])
+        # torch.Size([8, 1, 248, 216])
+        # torch.Size([8, 3, 248, 216])
+        # torch.Size([8, 2, 248, 216])
+        # torch.Size([8, 1, 248, 216])
+        # print(len(gt_bboxes_3d))    #8
+        # print(len(gt_labels_3d))    #8
+        # print(type(gt_bboxes_3d[0]))    #<class 'mmdet3d.core.bbox.structures.lidar_box3d.LiDARInstance3DBoxes'>
+        # print(gt_labels_3d[0].shape)
         loss_inputs = [gt_bboxes_3d, gt_labels_3d, outs]
         losses = self.pts_bbox_head.loss(*loss_inputs)
         return losses

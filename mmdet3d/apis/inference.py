@@ -114,6 +114,8 @@ def inference_detector(model, pcd):
     # forward the model
     with torch.no_grad():
         result = model(return_loss=False, rescale=True, **data)
+    # print(type(result[0]))
+    # print(len(result)) # 3
     return result, data
 
 

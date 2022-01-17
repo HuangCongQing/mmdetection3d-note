@@ -46,6 +46,44 @@ def kitti_data_prep(root_path, info_prefix, version, out_dir):
         mask_anno_path='instances_train.json',
         with_mask=(version == 'mask'))
 
+# 新建ouster
+# python tools/create_data.py ouster --root-path ./data/ouster --out-dir ./data/ouster --extra-tag ouster
+def ouster_data_prep(root_path, info_prefix, version, out_dir):
+    """Prepare data related to ouster dataset.
+
+    Related data consists of '.pkl' files recording basic infos,
+    2D annotations and groundtruth database.
+
+    Args:
+        root_path (str): Path of dataset root.  参数：./data/ouster
+        info_prefix (str): The prefix of info filenames.  参数：ouster
+        version (str): Dataset version.
+        out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/ouster
+    """
+    kitti.create_ouster_info_file(root_path, info_prefix) # 第一步  ouster===========================================
+    # kitti.create_reduced_point_cloud(root_path, info_prefix) #
+    # 4个pkl文件路径
+    info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
+    info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
+    info_trainval_path = osp.join(root_path,
+                                  f'{info_prefix}_infos_trainval.pkl')
+    info_test_path = osp.join(root_path, f'{info_prefix}_infos_test.pkl')
+
+    # 生成4个pkl文件(得到2D的标注信息)
+    # kitti.export_2d_annotation(root_path, info_train_path)
+    # kitti.export_2d_annotation(root_path, info_val_path)
+    # kitti.export_2d_annotation(root_path, info_trainval_path)
+    # kitti.export_2d_annotation(root_path, info_test_path)
+
+    # 创建gtbase
+    # create_groundtruth_database( # tools/data_converter/create_gt_database.py
+    #     'OusterDataset',
+    #     root_path,
+    #     info_prefix,
+    #     f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl
+    #     relative_path=False,
+    #     mask_anno_path='instances_train.json',
+    #     with_mask=(version == 'mask'))
 
 def nuscenes_data_prep(root_path,
                        info_prefix,
@@ -185,46 +223,9 @@ def waymo_data_prep(root_path,
         relative_path=False,
         with_mask=False)
 
-# 新建ouster
-# python tools/create_data.py ouster --root-path ./data/ouster --out-dir ./data/ouster --extra-tag ouster
-def ouster_data_prep(root_path, info_prefix, version, out_dir):
-    """Prepare data related to ouster dataset.
-
-    Related data consists of '.pkl' files recording basic infos,
-    2D annotations and groundtruth database.
-
-    Args:
-        root_path (str): Path of dataset root.  参数：./data/ouster
-        info_prefix (str): The prefix of info filenames.  参数：ouster
-        version (str): Dataset version.
-        out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/ouster
-    """
-    kitti.create_ouster_info_file(root_path, info_prefix) # 第一步  ouster===========================================
-    # kitti.create_reduced_point_cloud(root_path, info_prefix) #
-    # 4个pkl文件路径
-    info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
-    info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
-    info_trainval_path = osp.join(root_path,
-                                  f'{info_prefix}_infos_trainval.pkl')
-    info_test_path = osp.join(root_path, f'{info_prefix}_infos_test.pkl')
-
-    # 生成4个pkl文件(得到2D的标注信息)
-    # kitti.export_2d_annotation(root_path, info_train_path)
-    # kitti.export_2d_annotation(root_path, info_val_path)
-    # kitti.export_2d_annotation(root_path, info_trainval_path)
-    # kitti.export_2d_annotation(root_path, info_test_path)
-
-    # 创建gtbase
-    # create_groundtruth_database( # tools/data_converter/create_gt_database.py
-    #     'OusterDataset',
-    #     root_path,
-    #     info_prefix,
-    #     f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl
-    #     relative_path=False,
-    #     mask_anno_path='instances_train.json',
-    #     with_mask=(version == 'mask'))
 # =============================================================================================
 
+# 参数配置
 parser = argparse.ArgumentParser(description='Data converter arg parser')
 parser.add_argument('dataset', metavar='kitti', help='name of the dataset')
 parser.add_argument(

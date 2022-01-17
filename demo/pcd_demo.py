@@ -29,6 +29,7 @@ def main():
 
     # build the model from a config file and a checkpoint file
     model = init_model(args.config, args.checkpoint, device=args.device)
+    # print(model)
     # test a single image  循环1000次，计算耗时
     start = time.time()
     for i in tqdm(range(1)): # 循环次数
@@ -37,7 +38,7 @@ def main():
     print('Time comsumption:{:.3f}hz  based on GPU:{}'.format(1000/(end - start), next(model.parameters()).is_cuda))
 
     # show the results 生成。obj文件
-    show_result_meshlab(
+    a,b = show_result_meshlab(
         data,
         result,
         args.out_dir,
@@ -45,7 +46,7 @@ def main():
         show=args.show,
         snapshot=args.snapshot,
         task='det')
-
+    # print(a)
 
 if __name__ == '__main__':
     main()

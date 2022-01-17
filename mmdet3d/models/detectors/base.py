@@ -26,11 +26,13 @@ class Base3DDetector(BaseDetector):
                 torch.Tensor should have a shape NxCxHxW, which contains
                 all images in the batch. Defaults to None.
         """
+        # print('test')
         for var, name in [(points, 'points'), (img_metas, 'img_metas')]:
             if not isinstance(var, list):
                 raise TypeError('{} must be a list, but got {}'.format(
                     name, type(var)))
-
+        # print(len(points))
+        # print(len(img_metas))
         num_augs = len(points)
         if num_augs != len(img_metas):
             raise ValueError(

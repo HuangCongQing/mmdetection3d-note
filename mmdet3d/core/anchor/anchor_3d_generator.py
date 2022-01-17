@@ -96,8 +96,11 @@ class Anchor3DRangeGenerator(object): # ========================================
                 num_base_anchors is the number of anchors for that level.
         """
         assert self.num_levels == len(featmap_sizes)
+        # print(self.num_levels)  #1
         multi_level_anchors = []
         for i in range(self.num_levels):
+            # print(featmap_sizes[i]) # torch.Size([248, 216])
+            # print(self.scales[i])   #1
             anchors = self.single_level_grid_anchors(
                 featmap_sizes[i], self.scales[i], device=device)
             if self.reshape_out:
