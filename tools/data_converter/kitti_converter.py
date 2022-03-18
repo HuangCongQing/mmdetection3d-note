@@ -49,25 +49,30 @@ def _calculate_num_points_in_gt(data_path,
                                 relative_path,
                                 remove_outside=True,
                                 num_features=4):
+    # 对于每一帧数据里的信息
     for info in mmcv.track_iter_progress(infos):
-        pc_info = info['point_cloud']
-        image_info = info['image'] # KeyError: 'image'
-        calib = info['calib']
-        if relative_path:
+        pc_info = info['point_cloud'] # 获取点云信息
+        image_info = info['image'] # KeyError: 'image'  #获取图像信息
+        calib = info['calib']  # 获取相机标定参数
+        if relative_path: #  # 如果相对路径存在，则变为绝对路径，否则取保存在字典中的路径值
             v_path = str(Path(data_path) / pc_info['velodyne_path'])
         else:
             v_path = pc_info['velodyne_path']
+        # 从文件中读取点云数据，并按照格式排成（M,4）
         points_v = np.fromfile(
             v_path, dtype=np.float32, count=-1).reshape([-1, num_features])
         rect = calib['R0_rect']
         Trv2c = calib['Tr_velo_to_cam']
         P2 = calib['P2']
         if remove_outside:
+            # 判断如果去掉框外面的点，调用函数来实现，去掉外面的点能加快速度
             points_v = box_np_ops.remove_outside_points(
                 points_v, rect, Trv2c, P2, image_info['image_shape'])
 
         # points_v = points_v[points_v[:, 0] > 0]
+        # 获取这一帧中所有物体的信息
         annos = info['annos']
+        # 得到去掉dontcare的物体的总个数，并取出位置等信息，并将信息组成（N,7）
         num_obj = len([n for n in annos['name'] if n != 'DontCare'])
         # annos = kitti.filter_kitti_anno(annos, ['DontCare'])
         dims = annos['dimensions'][:num_obj]
@@ -75,13 +80,16 @@ def _calculate_num_points_in_gt(data_path,
         rots = annos['rotation_y'][:num_obj]
         gt_boxes_camera = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                          axis=1)
+        # 将数据从相机转为雷达坐标系
         gt_boxes_lidar = box_np_ops.box_camera_to_lidar(
             gt_boxes_camera, rect, Trv2c)
+        # 获取点是否在框内的索引，（0,0,0，0,-1，0，,-1，-1）
         indices = box_np_ops.points_in_rbbox(points_v[:, :3], gt_boxes_lidar)
-        num_points_in_gt = indices.sum(0)
-        num_ignored = len(annos['dimensions']) - num_obj
+        num_points_in_gt = indices.sum(0)  # 得到在框内的点的个数
+        num_ignored = len(annos['dimensions']) - num_obj # 得到的是无效物体的个数，即dontcare
         num_points_in_gt = np.concatenate(
             [num_points_in_gt, -np.ones([num_ignored])])
+        # 将得到框中点的个数，存放在字典中
         annos['num_points_in_gt'] = num_points_in_gt.astype(np.int32)
 
 # 第一步骤：生成info文件
@@ -120,7 +128,7 @@ def create_kitti_info_file(data_path,
     # 添加个数据gt的数量： annos['num_points_in_gt'] 
     _calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path)
     filename = save_path / f'{pkl_prefix}_infos_train.pkl' # data/kitti/kitti_infos_train.pkl
-    print(f'Kitti info train file is saved to {filename}')
+    print(f'Kitti数据 info train file is saved to {filename}')
     mmcv.dump(kitti_infos_train, filename)
     # 验证
     kitti_infos_val = get_kitti_image_info(
@@ -170,12 +178,12 @@ def create_ouster_info_file(data_path,
     val_img_ids = _read_imageset_file(str(imageset_folder / 'val.txt'))
     test_img_ids = _read_imageset_file(str(imageset_folder / 'test.txt'))
 
-    print('Generate info. this may take several minutes.')
+    print('【ouster】生成Generate info. this may take several minutes.')
     if save_path is None:
         save_path = Path(data_path)
     else:
         save_path = Path(save_path)
-    # 训练集 返回info
+    # 训练集 返回info=============================tools/data_converter/kitti_data_utils.py
     kitti_infos_train = get_ouster_image_info( # 已修改
         data_path,
         training=True,
@@ -297,7 +305,7 @@ def create_waymo_info_file(data_path,
     print(f'Waymo info test file is saved to {filename}')
     mmcv.dump(waymo_infos_test, filename)
 
-#  压缩的点云?????
+#  压缩的点云生成 velodyne_reduced（降采样的bin文件
 def _create_reduced_point_cloud(data_path,
                                 info_path,
                                 save_path=None,

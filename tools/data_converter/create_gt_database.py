@@ -105,15 +105,17 @@ def crop_image_patch(pos_proposals, gt_masks, pos_assigned_gt_inds, org_img):
         masks.append(mask_patch)
     return img_patches, masks
 
-# 创建GT 数据集
+# 数据增强：创建GT 数据集==================================================main入口   
+ # 用trainfile的groundtruth产生groundtruth_database，
+# 只保存训练数据中的gt_box及其包围的点的信息，用于数据增强
 def create_groundtruth_database(dataset_class_name,
                                 data_path,
                                 info_prefix,
-                                info_path=None,
+                                info_path=None, # './data/ouster/ouster_infos_train.pkl'训练集有label
                                 mask_anno_path=None,
                                 used_classes=None,
-                                database_save_path=None,
-                                db_info_save_path=None,
+                                database_save_path=None, # 保存路径# './data/ouster/ouster_gt_database' 保存单个障碍物bin文件的文件夹
+                                db_info_save_path=None, # './data/ouster/ouster_dbinfos_train.pkl'
                                 relative_path=True,
                                 add_rgb=False,
                                 lidar_only=False,
@@ -126,7 +128,7 @@ def create_groundtruth_database(dataset_class_name,
         dataset_class_name （str): Name of the input dataset.
         data_path (str): Path of the data.
         info_prefix (str): Prefix of the info file.
-        info_path (str): Path of the info file.
+        info_path (str): Path of the info file.   pkl文件data/kitti/kitti_dbinfos_train.pkl
             Default: None.
         mask_anno_path (str): Path of the mask_anno.
             Default: None.
@@ -141,7 +143,7 @@ def create_groundtruth_database(dataset_class_name,
         with_mask (bool): Whether to use mask.
             Default: False.
     """
-    print(f'Create GT Database of {dataset_class_name}')
+    print(f'入数据增强Create GT Database of {dataset_class_name}')
     dataset_cfg = dict(
         type=dataset_class_name, data_root=data_path, ann_file=info_path)
     if dataset_class_name == 'KittiDataset':
@@ -214,9 +216,10 @@ def create_groundtruth_database(dataset_class_name,
                     with_label_3d=True,
                     file_client_args=file_client_args)
             ])
-    # Ouster新建
+    # Ouster新建=========================================================================================main
     elif dataset_class_name == 'OusterDataset':
         file_client_args = dict(backend='disk')
+        # 配置
         dataset_cfg.update(
             test_mode=False,
             split='training',
@@ -230,8 +233,9 @@ def create_groundtruth_database(dataset_class_name,
                 dict(
                     type='LoadPointsFromFile', # 加载点云文件
                     coord_type='LIDAR',
-                    load_dim=6,
-                    use_dim=5,
+                    # load_dim=6,
+                    load_dim=4, # ========================
+                    use_dim=4,
                     file_client_args=file_client_args),
                 dict(
                     type='LoadAnnotations3D', # 加载标注文件
@@ -240,33 +244,35 @@ def create_groundtruth_database(dataset_class_name,
                     file_client_args=file_client_args)
             ])
 
-    dataset = build_dataset(dataset_cfg) # mmdet3d/datasets/builder.py
+    dataset = build_dataset(dataset_cfg) # mmdet3d/datasets/builder.py!!!!!!!!!!!!？？？？？没运行到
     # 
     if database_save_path is None:
-        database_save_path = osp.join(data_path, f'{info_prefix}_gt_database')
+        database_save_path = osp.join(data_path, f'{info_prefix}_gt_database') # './data/ouster/ouster_gt_database' 保存单个障碍物bin文件的文件夹
     if db_info_save_path is None: # './data/kitti/kitti_dbinfos_train.pkl'
         db_info_save_path = osp.join(data_path,
-                                     f'{info_prefix}_dbinfos_train.pkl')
+                                     f'{info_prefix}_dbinfos_train.pkl') # './data/ouster/ouster_dbinfos_train.pkl'
     mmcv.mkdir_or_exist(database_save_path)
     all_db_infos = dict()
-    if with_mask: #  Default: False.
-        coco = COCO(osp.join(data_path, mask_anno_path))
-        imgIds = coco.getImgIds()
-        file2id = dict()
-        for i in imgIds:
-            info = coco.loadImgs([i])[0]
-            file2id.update({info['file_name']: i})
+    # if with_mask: #  Default: False.
+    #     coco = COCO(osp.join(data_path, mask_anno_path))
+    #     imgIds = coco.getImgIds()
+    #     file2id = dict()
+    #     for i in imgIds:
+    #         info = coco.loadImgs([i])[0]
+    #         file2id.update({info['file_name']: i})
 
     group_counter = 0
+    # 遍历》》》》
     for j in track_iter_progress(list(range(len(dataset)))):
         input_dict = dataset.get_data_info(j) # mmdet3d/datasets/kitti_dataset.py
         dataset.pre_pipeline(input_dict) #  2. 调用 pre_pipeline() ， 扩展 input_dict 包含的属性信息 mmdet3d/datasets/custom_3d.py
-        example = dataset.pipeline(input_dict) # self.pipeline = Compose(pipeline)  mmdet3d/datasets/custom_3d.py将得到的===============================================================
-        # 
+        example = dataset.pipeline(input_dict) # 报错位置 self.pipeline = Compose(pipeline)  mmdet3d/datasets/custom_3d.py将得到的===============================================================
+        # 读取注释信息
         annos = example['ann_info']
-        image_idx = example['sample_idx'] #image_idx来源  mage_idx: object 所在样本下标
-        points = example['points'].tensor.numpy() # 原始点
+        image_idx = example['sample_idx'] #'000003' image_idx来源  mage_idx: object 所在样本下标
+        points = example['points'].tensor.numpy() # （65536， 4）原始点
         gt_boxes_3d = annos['gt_bboxes_3d'].tensor.numpy() # # GT点 7
+        # name的数据是['car','car','pedestrian'...'dontcare'...]表示当前帧里面的所有物体objects
         names = annos['gt_names']
         group_dict = dict()
         if 'group_ids' in annos:
@@ -274,63 +280,79 @@ def create_groundtruth_database(dataset_class_name,
         else:
             group_ids = np.arange(gt_boxes_3d.shape[0], dtype=np.int64)
         difficulty = np.zeros(gt_boxes_3d.shape[0], dtype=np.int32)
-        if 'difficulty' in annos:
+        if 'difficulty' in annos: # 没有
             difficulty = annos['difficulty']
 
-        num_obj = gt_boxes_3d.shape[0]
-        point_indices = box_np_ops.points_in_rbbox(points, gt_boxes_3d)
+        # num_obj是有效物体的个数，为N
+        num_obj = gt_boxes_3d.shape[0] # 数量=======================================
+        # 返回每个box中的点云索引[0 0 0 1 0 1 1...]
+        if dataset_class_name == 'OusterDataset':
+            point_indices = box_np_ops.points_in_rbbox(points, gt_boxes_3d, z_axis=2, origin=(0.5, 0.5, 0.5)) # 'mmdet3d.core.bbox.box_np_ops' has no attribute 'points_in_rbbox_ouster'
+            # point_indices = box_np_ops.points_in_rbbox_ouster(points, gt_boxes_3d) # 取出box的中点云下标重要函数！！！！！！！
+        else:
+            point_indices = box_np_ops.points_in_rbbox(points, gt_boxes_3d, z_axis=2, origin=(0.5, 0.5, 0)) # 取出box的中点云下标重要函数！！！！！！！
 
-        if with_mask:
-            # prepare masks
-            gt_boxes = annos['gt_bboxes']
-            img_path = osp.split(example['img_info']['filename'])[-1]
-            if img_path not in file2id.keys():
-                print(f'skip image {img_path} for empty mask')
-                continue
-            img_id = file2id[img_path]
-            kins_annIds = coco.getAnnIds(imgIds=img_id)
-            kins_raw_info = coco.loadAnns(kins_annIds)
-            kins_ann_info = _parse_coco_ann_info(kins_raw_info)
-            h, w = annos['img_shape'][:2]
-            gt_masks = [
-                _poly2mask(mask, h, w) for mask in kins_ann_info['masks']
-            ]
-            # get mask inds based on iou mapping
-            bbox_iou = bbox_overlaps(kins_ann_info['bboxes'], gt_boxes)
-            mask_inds = bbox_iou.argmax(axis=0)
-            valid_inds = (bbox_iou.max(axis=0) > 0.5)
 
-            # mask the image
-            # use more precise crop when it is ready
-            # object_img_patches = np.ascontiguousarray(
-            #     np.stack(object_img_patches, axis=0).transpose(0, 3, 1, 2))
-            # crop image patches using roi_align
-            # object_img_patches = crop_image_patch_v2(
-            #     torch.Tensor(gt_boxes),
-            #     torch.Tensor(mask_inds).long(), object_img_patches)
-            object_img_patches, object_masks = crop_image_patch(
-                gt_boxes, gt_masks, mask_inds, annos['img'])
+        # if with_mask:
+        #     # prepare masks
+        #     gt_boxes = annos['gt_bboxes']
+        #     img_path = osp.split(example['img_info']['filename'])[-1]
+        #     if img_path not in file2id.keys():
+        #         print(f'skip image {img_path} for empty mask')
+        #         continue
+        #     img_id = file2id[img_path]
+        #     kins_annIds = coco.getAnnIds(imgIds=img_id)
+        #     kins_raw_info = coco.loadAnns(kins_annIds)
+        #     kins_ann_info = _parse_coco_ann_info(kins_raw_info)
+        #     h, w = annos['img_shape'][:2]
+        #     gt_masks = [
+        #         _poly2mask(mask, h, w) for mask in kins_ann_info['masks']
+        #     ]
+        #     # get mask inds based on iou mapping
+        #     bbox_iou = bbox_overlaps(kins_ann_info['bboxes'], gt_boxes)
+        #     mask_inds = bbox_iou.argmax(axis=0)
+        #     valid_inds = (bbox_iou.max(axis=0) > 0.5)
+        #
+        #     # mask the image
+        #     # use more precise crop when it is ready
+        #     # object_img_patches = np.ascontiguousarray(
+        #     #     np.stack(object_img_patches, axis=0).transpose(0, 3, 1, 2))
+        #     # crop image patches using roi_align
+        #     # object_img_patches = crop_image_patch_v2(
+        #     #     torch.Tensor(gt_boxes),
+        #     #     torch.Tensor(mask_inds).long(), object_img_patches)
+        #     object_img_patches, object_masks = crop_image_patch(
+        #         gt_boxes, gt_masks, mask_inds, annos['img'])
 
+        # 遍历障碍物数量
         for i in range(num_obj):
-            #  (000003_Car_0.bin)
+            ## 创建文件名，并设置保存路径，最后文件如：  (000003_Car_0.bin)
             filename = f'{image_idx}_{names[i]}_{i}.bin' # bin文件
-            abs_filepath = osp.join(database_save_path, filename)
+            #
+            abs_filepath = osp.join(database_save_path, filename) # 真正保存路径
+            # /data/kitti/ouster_gt_database/000007_Cyclist_3.bin
             rel_filepath = osp.join(f'{info_prefix}_gt_database', filename)
 
             # save point clouds and image patches for each object
-            gt_points = points[point_indices[:, i]]
-            gt_points[:, :3] -= gt_boxes_3d[i, :3] # GT点 x,y,z,r
+            # point_indices[i] > 0得到的是一个[T,F,T,T,F...]之类的真假索引，共有M个
+            # 再从points中取出相应为true的点云数据，放在gt_points中
+            gt_points = points[point_indices[:, i]] # 取出里面的点云（730， 4）
+            # 将第i个box内点转化为局部坐标
+            gt_points[:, :3] -= gt_boxes_3d[i, :3] # GT点 x,y,z,
 
-            if with_mask:
-                if object_masks[i].sum() == 0 or not valid_inds[i]:
-                    # Skip object for empty or invalid mask
-                    continue
-                img_patch_path = abs_filepath + '.png' # 图像
-                mask_patch_path = abs_filepath + '.mask.png'
-                mmcv.imwrite(object_img_patches[i], img_patch_path)
-                mmcv.imwrite(object_masks[i], mask_patch_path)
+            # if with_mask: # 不执行吧
+            #     if object_masks[i].sum() == 0 or not valid_inds[i]:
+            #         # Skip object for empty or invalid mask
+            #         continue
+            #     img_patch_path = abs_filepath + '.png' # 图像
+            #     mask_patch_path = abs_filepath + '.mask.png'
+            #     mmcv.imwrite(object_img_patches[i], img_patch_path)
+            #     mmcv.imwrite(object_masks[i], mask_patch_path)
 
+            # # 把gt_points的信息写入文件里 保存bin文件！！！！！！！
+            # './data/ouster/ouster_gt_database/4_Truck_0.bin'
             with open(abs_filepath, 'w') as f:
+                print("\n gt_points的shape: ", gt_points.shape ,"保存路径", abs_filepath)
                 gt_points.tofile(f)
 
             if (used_classes is None) or names[i] in used_classes:
@@ -351,15 +373,16 @@ def create_groundtruth_database(dataset_class_name,
                 db_info['group_id'] = group_dict[local_group_id]
                 if 'score' in annos:
                     db_info['score'] = annos['score'][i]
-                if with_mask:
-                    db_info.update({'box2d_camera': gt_boxes[i]})
+                # if with_mask: # 不执行吧
+                #     db_info.update({'box2d_camera': gt_boxes[i]})
                 if names[i] in all_db_infos:
-                    all_db_infos[names[i]].append(db_info)
+                    all_db_infos[names[i]].append(db_info) # 统一保存在
                 else:
                     all_db_infos[names[i]] = [db_info]
 
     for k, v in all_db_infos.items():
-        print(f'load {len(v)} {k} database infos')
+        print(f'加载load {len(v)} {k} database infos')
+        # 加载load 96 Truck database infos
 
     with open(db_info_save_path, 'wb') as f:
         pickle.dump(all_db_infos, f) # 生成pkl数据

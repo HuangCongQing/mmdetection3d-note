@@ -88,7 +88,7 @@ def get_pose_path(idx,
     return get_kitti_info_path(idx, prefix, 'pose', '.txt', training,
                                relative_path, exist_check, use_prefix_id)
 
-# kitt的GT数据===========================================================
+# kitt(KittiTest)的GT数据===========================================================
 def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
     annotations = {}
     annotations.update({
@@ -132,7 +132,7 @@ def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
     annotations['group_ids'] = np.arange(num_gt, dtype=np.int32)
     return annotations
 
-## Ouster GT数据===========================================================
+## Ouster GT数据（8列）===========================================================
 # def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt'
 #     annotations = {}
 #     annotations.update({
@@ -162,7 +162,7 @@ def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
 #                                           ]).reshape(-1, 3)[:, [2, 0, 1]] # 长宽高位置--> 高度，长度 宽度？？？？
 #     annotations['rotation_y'] = np.array([float(x[7]) # 表示车体朝向，绕相机坐标系y轴的弧度值
 #                                           for x in content]).reshape(-1)
-#     # 如果有第9列置信度
+#     # 如果有第9列置信度(如果有score就是第9列，没有就只有8列)
 #     print(len(content[0]))
 #     if len(content) != 0 and len(content[0]) == 9:  # have score #  (预测有score，但label_2标签文件不包含score)
 #         annotations['score'] = np.array([float(x[8]) for x in content])
@@ -174,7 +174,7 @@ def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
 #     return annotations
 
 
-# Ouster GT数据 类似kitti格式===========================================================ain
+# Ouster GTlabel数据 （16[0, 15]列）=类似kitti格式===========================================================ain
 def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt'
     annotations = {}
     annotations.update({
@@ -211,8 +211,9 @@ def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt
                                           for x in content]).reshape(-1)
     if len(content) != 0 and len(content[0]) == 16:  # have score
         annotations['score'] = np.array([float(x[15]) for x in content])
-    else:
-        annotations['score'] = np.zeros((annotations['bbox'].shape[0], ))
+    else: # 下面设置为0
+        annotations['score'] = np.zeros((annotations['rotation_y'].shape[0], )) # KeyError: 'bbox'
+        # annotations['score'] = np.zeros((annotations['bbox'].shape[0], )) # KeyError: 'bbox'
     index = list(range(num_objects)) + [-1] * (num_gt - num_objects)
     annotations['index'] = np.array(index, dtype=np.int32)
     annotations['group_ids'] = np.arange(num_gt, dtype=np.int32)
@@ -412,7 +413,7 @@ def get_ouster_image_info(path,
         if label_info: # 有label信息
             label_path = get_label_path(idx, path, training, relative_path) # 得到路径
             if relative_path:
-                label_path = str(root_path / label_path)
+                label_path = str(root_path / label_path) # tools/data_converter/kitti_data_utils.py
             annotations = get_label_anno_ouster(label_path) # GT数据=====================================================最重要
         # info['image'] = image_info # 图像信息
         info['point_cloud'] = pc_info # 点云数据

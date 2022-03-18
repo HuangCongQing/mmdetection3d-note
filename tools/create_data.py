@@ -46,7 +46,7 @@ def kitti_data_prep(root_path, info_prefix, version, out_dir):
         mask_anno_path='instances_train.json',
         with_mask=(version == 'mask'))
 
-# 新建ouster
+# 新建ouster=====================================================================
 # python tools/create_data.py ouster --root-path ./data/ouster --out-dir ./data/ouster --extra-tag ouster
 def ouster_data_prep(root_path, info_prefix, version, out_dir):
     """Prepare data related to ouster dataset.
@@ -60,9 +60,12 @@ def ouster_data_prep(root_path, info_prefix, version, out_dir):
         version (str): Dataset version.
         out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/ouster
     """
+    # 1 生成 train , val , test 的 anno 文件GT
     kitti.create_ouster_info_file(root_path, info_prefix) # 第一步  ouster===========================================
+
+    # 2 生成 velodyne_reduced（降采样的bin文件，如下图），即在原始点云中移除那些投影之后落在图像之外的点与 velodyne 文件夹格式一致。
     # kitti.create_reduced_point_cloud(root_path, info_prefix) #
-    # 4个pkl文件路径
+    # 4个pkl文件路径（没有用到）
     info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
     info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
     info_trainval_path = osp.join(root_path,
@@ -75,15 +78,17 @@ def ouster_data_prep(root_path, info_prefix, version, out_dir):
     # kitti.export_2d_annotation(root_path, info_trainval_path)
     # kitti.export_2d_annotation(root_path, info_test_path)
 
-    # 创建gtbase
-    # create_groundtruth_database( # tools/data_converter/create_gt_database.py
-    #     'OusterDataset',
-    #     root_path,
-    #     info_prefix,
-    #     f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl
-    #     relative_path=False,
-    #     mask_anno_path='instances_train.json',
-    #     with_mask=(version == 'mask'))
+    # 3  创建gtbase生成 groundtruth_database 以及 db_info分割每个 sample 里的每个 object 得到相应的
+    #  {sample_idx} {class name} {obj_idx}.bin (000003_Car_0.bin)点云文件及标签信息，
+    # 按 class name 组织存到 db_info 文件db_info: dict()，按照类别名将数据集中所有 object 分为 group
+    create_groundtruth_database( # tools/data_converter/create_gt_database.py
+        'OusterDataset',
+        root_path,
+        info_prefix,
+        f'{out_dir}/{info_prefix}_infos_train.pkl',  # data/kitti/kitti_dbinfos_train.pkl
+        relative_path=False,
+        mask_anno_path='instances_train.json',
+        with_mask=(version == 'mask')) # version=1.0
 
 def nuscenes_data_prep(root_path,
                        info_prefix,
@@ -258,6 +263,7 @@ args = parser.parse_args()
 
 # python tools/create_data.py kitti --root-path ./data/kitti --out-dir ./data/kitti --extra-tag kitti
 if __name__ == '__main__':
+    print("创建数据入口...")
     if args.dataset == 'kitti': # 判断kitti参数 
         kitti_data_prep(
             root_path=args.root_path,

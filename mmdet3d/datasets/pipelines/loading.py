@@ -356,7 +356,8 @@ class LoadPointsFromFile(object):
 
     def __init__(self,
                  coord_type,
-                 load_dim=6,
+                #  load_dim=6,
+                 load_dim=4,
                  use_dim=[0, 1, 2], # 点云的x,y,z
                  shift_height=False,
                  use_color=False,
@@ -370,7 +371,7 @@ class LoadPointsFromFile(object):
         assert coord_type in ['CAMERA', 'LIDAR', 'DEPTH']
 
         self.coord_type = coord_type
-        self.load_dim = load_dim
+        self.load_dim = load_dim # 加载维度
         self.use_dim = use_dim
         self.file_client_args = file_client_args.copy()
         self.file_client = None
@@ -412,7 +413,7 @@ class LoadPointsFromFile(object):
         """
         pts_filename = results['pts_filename']
         points = self._load_points(pts_filename)
-        points = points.reshape(-1, self.load_dim) # ValueError: cannot reshape array of size 461536 into shape (6)
+        points = points.reshape(-1, self.load_dim) # ValueError: cannot reshape array of size 461536 into shape (6)==============================================
         points = points[:, self.use_dim] # 使用的维度
         attribute_dims = None
 

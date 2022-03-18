@@ -89,7 +89,42 @@ class VoxelNet(SingleStage3DDetector):
             dict: Losses of each branch.
         """
         x = self.extract_feat(points, img_metas) # 提取特征（feature, backbone,neck）
+        
+        # print(len(x))
+        # print(x[0].shape)
         outs = self.bbox_head(x) # 检测头
+
+        # print(len(outs)) # 3
+        # print(len(outs[0])) # 1
+        # print(outs[0][0].shape)  # torch.Size([6, 2, 248, 216])     6为batch size
+        # print(outs[1][0].shape)  # torch.Size([6, 14, 248, 216])
+        # print(outs[2][0].shape)  # torch.Size([6, 4, 248, 216])
+        
+        # 同anchor3d_head.py里的 cls_score, bbox_pred, dir_cls_preds
+        # python tools/train.py configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py   --gpu-ids 4
+        # 输入x len为1
+        # torch.Size([6, 384, 248, 216])
+        # 输出 len为3
+        # torch.Size([6, 2, 248, 216])
+        # torch.Size([6, 14, 248, 216])
+        # torch.Size([6, 4, 248, 216])
+        
+        
+        # python tools/train.py configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py   --gpu-ids 4 
+        # 输入x len为1
+        # torch.Size([6, 384, 248, 216])
+        # 输出 len为3
+        # torch.Size([6, 18, 248, 216])
+        # torch.Size([6, 42, 248, 216])
+        # torch.Size([6, 12, 248, 216])
+        
+        # python tools/train.py configs/pointpillars/01dcn_hv_pointpillars_secfpn_6x8_160e_ouster-3d-3class.py  --gpu-ids 4
+        # 输入x len为1 ，torch.Size([4, 384, 248, 216])
+        # 输出 len为3
+        # torch.Size([4, 42, 248, 216])
+        # torch.Size([4, 42, 248, 216])
+        # torch.Size([4, 12, 248, 216])
+        # ouster输出异常，是因为class_names包含7类，但是anchor只设置了3类
         loss_inputs = outs + (gt_bboxes_3d, gt_labels_3d, img_metas)
         losses = self.bbox_head.loss( # calculate loss
             *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
