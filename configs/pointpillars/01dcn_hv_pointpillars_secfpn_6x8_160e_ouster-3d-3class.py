@@ -19,10 +19,10 @@ _base_ = [
 # data_root = 'data/kittiTest/'
 # class_names = ['Pedestrian', 'Cyclist', 'Car']
 # ouster修改
-point_cloud_range =  [-30, -40, -3,   60, 40, 7.5] #  ouster配置(x,y,z) 考虑矿车高度7.475神宝MT4400！！x[] y[] z[-3, 10]
+point_cloud_range =  [-30, -40, -3,   80, 40, 7.5] #  ouster配置(x,y,z) 考虑矿车高度7.475神宝MT4400！！x[] y[] z[-3, 10]
 # data_root = 'data/ouster/'
 # class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') # 7class
-class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others') # 7class
+class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian') # 7class
 
 
 # PointPillars adopted a different sampling strategies among classes
@@ -40,7 +40,7 @@ class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','O
 train_pipeline = [
     dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4),
     dict(type='LoadAnnotations3D', with_bbox_3d=True, with_label_3d=True),
-    # dict(type='ObjectSample', db_sampler=db_sampler),
+    # dict(type='ObjectSample', db_sampler=db_sampler), # 数据增强gt-database
     dict(
         type='ObjectNoise',
         num_try=100,
@@ -130,7 +130,7 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # PointPillars usually need longer schedule than second, we simply double
 # the training schedule. Do remind that since we use RepeatDataset and
 # repeat factor is 2, so we actually train 160 epochs.
-runner = dict(max_epochs=80) # 80个epochs
+runner = dict(max_epochs=40) # 80个epochs
 
 # Use evaluation interval=2 reduce the number of evaluation timese 每隔2轮评测一次
 evaluation = dict(interval=2) # 参数

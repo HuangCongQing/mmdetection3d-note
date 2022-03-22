@@ -130,12 +130,12 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
 
     def _init_layers(self):
         """Initialize neural network layers of the head."""
-        print(self.num_anchors) # 6 2
-        print(self.num_classes) # 3 1
-        print(self.feat_channels)   # 384   384
-        print(self.box_code_size)   # 7     7
+        # print(self.num_anchors) # 6 2
+        # print(self.num_classes) # 3 1
+        # print(self.feat_channels)   # 384   384
+        # print(self.box_code_size)   # 7     7
         self.cls_out_channels = self.num_anchors * self.num_classes
-        print(self.cls_out_channels)    # 18    2
+        # print(self.cls_out_channels)    # 18    2
         self.conv_cls = nn.Conv2d(self.feat_channels, self.cls_out_channels, 1)
         self.conv_reg = nn.Conv2d(self.feat_channels,
                                   self.num_anchors * self.box_code_size, 1)
@@ -158,9 +158,9 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
         dir_cls_preds = None
         if self.use_direction_classifier:
             dir_cls_preds = self.conv_dir_cls(x) # 朝向
-        print(cls_score.shape)
-        print(bbox_pred.shape)
-        print(dir_cls_preds.shape)
+        # print(cls_score.shape)
+        # print(bbox_pred.shape)
+        # print(dir_cls_preds.shape)
         # torch.Size([6, 18, 248, 216]) 2
         # torch.Size([6, 42, 248, 216]) 14
         # torch.Size([6, 12, 248, 216]) 4

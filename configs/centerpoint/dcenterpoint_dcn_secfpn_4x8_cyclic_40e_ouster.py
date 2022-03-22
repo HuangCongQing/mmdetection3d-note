@@ -16,8 +16,9 @@ _base_ = [
 # ]
 
 # class_names = ['Pedestrian', 'Cyclist', 'Car']
-class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others')
-point_cloud_range =  [0, -39.68, -3, 70.4, 39.68, 7.5]
+class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian')
+# point_cloud_range =  [0, -39.68, -3, 70.4, 39.68, 7.5]
+point_cloud_range =  [-30, -40, -3,   80, 40, 7.5] # 
 
 model = dict(
     type='CenterPoint',
@@ -134,7 +135,8 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # PointPillars usually need longer schedule than second, we simply double
 # the training schedule. Do remind that since we use RepeatDataset and
 # repeat factor is 2, so we actually train 160 epochs.
-runner = dict(max_epochs=80)
+# runner = dict(max_epochs=80)
+runner = dict(max_epochs=40) # 训练40个
 
 # Use evaluation interval=2 reduce the number of evaluation timese
 evaluation = dict(interval=2)

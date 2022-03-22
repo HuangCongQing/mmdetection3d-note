@@ -36,7 +36,7 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             difficulty :  0
     '''
     # CLASS_NAMES = ['car', 'pedestrian', 'cyclist'] # #类别
-    CLASS_NAMES = ['Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others']
+    CLASS_NAMES = ['Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian']
 
     #检测难度从易到难，为了检测到同样数目的gt，使最小值减小，最大值增大
     # MIN_HEIGHT = [40, 25, 25] #高度

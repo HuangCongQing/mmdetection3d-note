@@ -132,7 +132,54 @@ def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
     annotations['group_ids'] = np.arange(num_gt, dtype=np.int32)
     return annotations
 
-## Ouster GT数据（8列）===========================================================
+## Ouster GT数据（9列）label xyz lwh yaw track_id===========================================================
+# Truck 97.47722899135692 -3.535724997517123 0.31135502654673985 11.688137421478185 8.343709003323193 5.651867697835426 -0.00670564012430029 1
+def get_label_anno_ouster(label_path): # 'data/ouster/training/label_2/000010.txt'
+    annotations = {}
+    annotations.update({
+        'name': [],
+        # 'truncated': [],
+        # 'occluded': [],
+        # 'alpha': [],
+        # 'bbox': [],
+        'dimensions': [],
+        'location': [],
+        'rotation_y': []
+    })
+    with open(label_path, 'r') as f: # 
+        lines = f.readlines() # 打开文件
+    # if len(lines) == 0 or len(lines[0]) < 15:
+    #     content = []
+    # else:
+    content = [line.strip().split(' ') for line in lines] # GT内容
+    print(content)
+    num_objects = len([x[0] for x in content if x[0] != 'DontCare']) # 除了Dontare，有多少类，这里是2类
+    annotations['name'] = np.array([x[0] for x in content]) # 第一列：['Car' 'Van' 'DontCare' 'DontCare' 'DontCare']
+    num_gt = len(annotations['name'])
+    annotations['location'] = np.array([[float(info) for info in x[1:4]] # 中心xyz坐标
+                                        for x in content]).reshape(-1, 3)
+    annotations['dimensions'] = np.array([[float(info) for info in x[4:7]] #  表示该车的高度，宽度，和长度，单位为米。（H,W,L）
+                                          for x in content
+                                          ]).reshape(-1, 3) # 长宽高位置--> 高度，长度 宽度？？？？
+    # annotations['dimensions'] = np.array([[float(info) for info in x[4:7]] #  表示该车的高度，宽度，和长度，单位为米。（H,W,L）
+    #                                       for x in content
+    #                                       ]).reshape(-1, 3)[:, [2, 0, 1]] # 长宽高位置--> 高度，长度 宽度？？？？
+    annotations['rotation_y'] = np.array([float(x[7]) # 表示车体朝向，绕相机坐标系y轴的弧度值
+                                          for x in content]).reshape(-1)
+    # 如果有第9列置信度(如果有score就是第9列，没有就只有8列)
+    print(len(content[0]))
+    if len(content) != 0 and len(content[0]) == 10:  # have score #  (预测有score，但label_2标签文件不包含score)
+        annotations['score'] = np.array([float(x[9]) for x in content])
+    else:
+        # 没有score，初始化为0
+        annotations['score'] = np.zeros((annotations['rotation_y'].shape[0], ))
+    index = list(range(num_objects)) + [-1] * (num_gt - num_objects) # [0, 1, -1, -1, -1] = [0,1 ] +  [-1, -1, -1]
+    annotations['index'] = np.array(index, dtype=np.int32)
+    annotations['group_ids'] = np.arange(num_gt, dtype=np.int32) # [0 1 2 3 4]
+    return annotations
+
+
+# Ouster GTlabel数据 （16[0, 15]列）=类似kitti格式===========================================================ain
 # def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt'
 #     annotations = {}
 #     annotations.update({
@@ -150,74 +197,32 @@ def get_label_anno(label_path): # 'data/kitti/training/label_2/000010.txt'
 #     # if len(lines) == 0 or len(lines[0]) < 15:
 #     #     content = []
 #     # else:
-#     content = [line.strip().split(' ') for line in lines] # GT内容
-#     print(content)
-#     num_objects = len([x[0] for x in content if x[0] != 'DontCare']) # 除了Dontare，有多少类，这里是2类
-#     annotations['name'] = np.array([x[0] for x in content]) # 第一列：['Car' 'Van' 'DontCare' 'DontCare' 'DontCare']
+#     content = [line.strip().split(' ') for line in lines] # list:5x15   GT内容
+#     num_objects = len([x[0] for x in content if x[0] != 'DontCare']) # 
+#     annotations['name'] = np.array([x[0] for x in content])
 #     num_gt = len(annotations['name'])
-#     annotations['location'] = np.array([[float(info) for info in x[1:4]] # 中心xyz坐标
-#                                         for x in content]).reshape(-1, 3)
-#     annotations['dimensions'] = np.array([[float(info) for info in x[4:7]] #  表示该车的高度，宽度，和长度，单位为米。（H,W,L）
+#     # annotations['truncated'] = np.array([float(x[1]) for x in content])
+#     # annotations['occluded'] = np.array([int(x[2]) for x in content])
+#     # annotations['alpha'] = np.array([float(x[3]) for x in content])
+#     # annotations['bbox'] = np.array([[float(info) for info in x[4:8]]
+#     #                                 for x in content]).reshape(-1, 4)
+#     # dimensions will convert hwl format to standard lhw(camera) format.
+#     annotations['dimensions'] = np.array([[float(info) for info in x[8:11]]
 #                                           for x in content
-#                                           ]).reshape(-1, 3)[:, [2, 0, 1]] # 长宽高位置--> 高度，长度 宽度？？？？
-#     annotations['rotation_y'] = np.array([float(x[7]) # 表示车体朝向，绕相机坐标系y轴的弧度值
+#                                           ]).reshape(-1, 3)[:, [2, 0, 1]] # [:, [0, 2, 1]] # 高长宽 #长宽高 --> 长高宽！！！！！！
+#     annotations['location'] = np.array([[float(info) for info in x[11:14]]
+#                                         for x in content]).reshape(-1, 3)
+#     annotations['rotation_y'] = np.array([float(x[14])
 #                                           for x in content]).reshape(-1)
-#     # 如果有第9列置信度(如果有score就是第9列，没有就只有8列)
-#     print(len(content[0]))
-#     if len(content) != 0 and len(content[0]) == 9:  # have score #  (预测有score，但label_2标签文件不包含score)
-#         annotations['score'] = np.array([float(x[8]) for x in content])
-#     else:
-#         annotations['score'] = np.zeros((annotations['rotation_y'].shape[0], ))
-#     index = list(range(num_objects)) + [-1] * (num_gt - num_objects) # [0, 1, -1, -1, -1] = [0,1 ] +  [-1, -1, -1]
+#     if len(content) != 0 and len(content[0]) == 16:  # have score
+#         annotations['score'] = np.array([float(x[15]) for x in content])
+#     else: # 下面设置为0
+#         annotations['score'] = np.zeros((annotations['rotation_y'].shape[0], )) # KeyError: 'bbox'
+#         # annotations['score'] = np.zeros((annotations['bbox'].shape[0], )) # KeyError: 'bbox'
+#     index = list(range(num_objects)) + [-1] * (num_gt - num_objects)
 #     annotations['index'] = np.array(index, dtype=np.int32)
-#     annotations['group_ids'] = np.arange(num_gt, dtype=np.int32) # [0 1 2 3 4]
+#     annotations['group_ids'] = np.arange(num_gt, dtype=np.int32)
 #     return annotations
-
-
-# Ouster GTlabel数据 （16[0, 15]列）=类似kitti格式===========================================================ain
-def get_label_anno_ouster(label_path): # 'data/kitti/training/label_2/000010.txt'
-    annotations = {}
-    annotations.update({
-        'name': [],
-        # 'truncated': [],
-        # 'occluded': [],
-        # 'alpha': [],
-        # 'bbox': [],
-        'dimensions': [],
-        'location': [],
-        'rotation_y': []
-    })
-    with open(label_path, 'r') as f: # 
-        lines = f.readlines() # 打开文件
-    # if len(lines) == 0 or len(lines[0]) < 15:
-    #     content = []
-    # else:
-    content = [line.strip().split(' ') for line in lines] # list:5x15   GT内容
-    num_objects = len([x[0] for x in content if x[0] != 'DontCare']) # 
-    annotations['name'] = np.array([x[0] for x in content])
-    num_gt = len(annotations['name'])
-    # annotations['truncated'] = np.array([float(x[1]) for x in content])
-    # annotations['occluded'] = np.array([int(x[2]) for x in content])
-    # annotations['alpha'] = np.array([float(x[3]) for x in content])
-    # annotations['bbox'] = np.array([[float(info) for info in x[4:8]]
-    #                                 for x in content]).reshape(-1, 4)
-    # dimensions will convert hwl format to standard lhw(camera) format.
-    annotations['dimensions'] = np.array([[float(info) for info in x[8:11]]
-                                          for x in content
-                                          ]).reshape(-1, 3)[:, [2, 0, 1]] # [:, [0, 2, 1]] # 高长宽 #长宽高 --> 长高宽！！！！！！
-    annotations['location'] = np.array([[float(info) for info in x[11:14]]
-                                        for x in content]).reshape(-1, 3)
-    annotations['rotation_y'] = np.array([float(x[14])
-                                          for x in content]).reshape(-1)
-    if len(content) != 0 and len(content[0]) == 16:  # have score
-        annotations['score'] = np.array([float(x[15]) for x in content])
-    else: # 下面设置为0
-        annotations['score'] = np.zeros((annotations['rotation_y'].shape[0], )) # KeyError: 'bbox'
-        # annotations['score'] = np.zeros((annotations['bbox'].shape[0], )) # KeyError: 'bbox'
-    index = list(range(num_objects)) + [-1] * (num_gt - num_objects)
-    annotations['index'] = np.array(index, dtype=np.int32)
-    annotations['group_ids'] = np.arange(num_gt, dtype=np.int32)
-    return annotations
 
 
 def _extend_matrix(mat):

@@ -17,7 +17,7 @@ model = dict(
     voxel_layer=dict(
         max_num_points=32,  # max_points_per_voxel
         # point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1], # [0, -40, -3,   60, 40, 7.5]  上层已修改
-        point_cloud_range =  [-30, -40, -3, 60, 40, 7.5],
+        point_cloud_range =  [-30, -40, -3,   80, 40, 7.5] ,
         voxel_size=voxel_size,
         max_voxels=(16000, 40000)  # (training, testing) max_voxels
     ),
@@ -29,7 +29,7 @@ model = dict(
         with_distance=False,
         voxel_size=voxel_size,
         # point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1]),# 上层已修改
-        point_cloud_range =  [-30, -40, -3,   60, 40, 7.5]
+        point_cloud_range =  [-30, -40, -3,   80, 40, 7.5] 
     ),
     middle_encoder=dict(
         type='PointPillarsScatter', in_channels=64, output_shape=[496, 432]), # 生成伪造图像，图像维度为(1,64,496,432)  mmdet3d/models/middle_encoders/pillar_scatter.py
@@ -65,7 +65,7 @@ model = dict(
             ],
             # sizes=[[0.6, 0.8, 1.73], [0.6, 1.76, 1.73], [1.6, 3.9, 1.56]], # ['Pedestrian', 'Cyclist', 'Car'] Anchor size with shape [N, 3], in order of x, y, z.
             # sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], 
-            sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], # 3D sizes of anchors. class_names =  'Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian','Others'   ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') 
+            sizes=[[6.5, 13, 6.5], [3.5, 7, 3], [3.9, 1.6, 1.56]], # 3D sizes of anchors. class_names =  'Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian'   ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') 
             rotations=[0, 1.57],
             reshape_out=False),
         diff_rad_by_sin=True,
