@@ -71,7 +71,7 @@ def _write_oriented_bbox(scene_bbox, out_filename):
 
     return
 
-
+# 可视化结果
 def show_result(points,
                 gt_bboxes,
                 pred_bboxes,

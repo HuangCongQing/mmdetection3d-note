@@ -86,18 +86,18 @@ def to_depth_mode(points, bboxes):
                                    Box3DMode.DEPTH)
     return points, bboxes
 
-
+# 显示检测结果
 def show_det_data(idx, dataset, out_dir, filename, show=False):
     """Visualize 3D point cloud and 3D bboxes."""
     example = dataset.prepare_train_data(idx)
-    points = example['points']._data.numpy()
-    gt_bboxes = dataset.get_ann_info(idx)['gt_bboxes_3d'].tensor
+    points = example['points']._data.numpy() # 原始点
+    gt_bboxes = dataset.get_ann_info(idx)['gt_bboxes_3d'].tensor # gt
     if dataset.box_mode_3d != Box3DMode.DEPTH:
         points, gt_bboxes = to_depth_mode(points, gt_bboxes)
     show_result(
         points,
         gt_bboxes.clone(),
-        None,
+        None, # 预测
         out_dir,
         filename,
         show=show,

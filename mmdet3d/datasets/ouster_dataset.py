@@ -306,7 +306,7 @@ class OusterDataset(Custom3DDataset):
                                                   pklfile_prefix,
                                                   submission_prefix)
         return result_files, tmp_dir
-    # 评测（继承mmdet3d/datasets/custom_3d.py）====================
+    # 评测（继承mmdet3d/datasets/custom_3d.py）====================评测main
     def evaluate(self,
                  results, # ['boxes_3d', 'scores_3d', 'labels_3d']  5个文件bin文件list就是{list:5}
                  metric=None, # None
