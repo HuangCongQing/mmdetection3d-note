@@ -18,9 +18,10 @@ _base_ = [
 # dataset settings 数据集配置
 # data_root = 'data/kittiTest/'
 # class_names = ['Pedestrian', 'Cyclist', 'Car']
+
 # ouster修改
 point_cloud_range =  [-30, -40, -3,   80, 40, 7.5] #  ouster配置(x,y,z) 考虑矿车高度7.475神宝MT4400！！x[] y[] z[-3, 10]
-# data_root = 'data/ouster/'
+data_root = 'data/ouster/'
 # class_names =  ('Truck','Car','Pedestrian','Excavator','Widebody','Auxiliary','Others') # 7class
 class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian') # 7class
 
@@ -28,13 +29,13 @@ class_names =  ('Truck','Auxiliary','Car','Excavator','Widebody','Pedestrian') #
 # PointPillars adopted a different sampling strategies among classes
 # db_sampler = dict(
 #     data_root=data_root,
-#     info_path=data_root + 'kitti_dbinfos_train.pkl',
+#     info_path=data_root + 'ouster_dbinfos_train.pkl',
 #     rate=1.0,
 #     prepare=dict(
 #         filter_by_difficulty=[-1],
-#         filter_by_min_points=dict(Car=5, Pedestrian=10, Cyclist=10)),
+#         filter_by_min_points=dict(Truck=5, Auxiliary=10, Car=10)),
 #     classes=class_names,
-#     sample_groups=dict(Car=15, Pedestrian=10, Cyclist=10))
+#     sample_groups=dict(Truck=15, Auxiliary=10, Car=10))
 
 # PointPillars uses different augmentation hyper parameters
 train_pipeline = [

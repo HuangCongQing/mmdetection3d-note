@@ -652,7 +652,7 @@ class CenterHead(BaseModule):
             preds_dict[0]['anno_box'] = torch.cat(
                 (preds_dict[0]['reg'], preds_dict[0]['height'],
                  preds_dict[0]['dim'], preds_dict[0]['rot'],
-                 #preds_dict[0]['vel']
+                 #preds_dict[0]['vel'] # 速度预测去掉
                  ),
                 dim=1)
 
