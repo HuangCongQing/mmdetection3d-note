@@ -116,12 +116,12 @@ if __name__ == "__main__":
     #350 比较理想
     #filename_bbox = '/home/keenthan/Documents/AI_training/groundtrue/GroundTrueData_Frame410.txt'
     #filename_bbox = '/home/keenthan/Desktop/14/20211213103031002/10.25-2/_2021-10-25-14-59-51/livox/000013.txt'
-    filename_bbox = '/home/keenthan/Desktop/finaul_result/txt_result/000315.txt'
+    filename_bbox = '/home/hcq/data/2022anno/finaul_result/txt_result/000315.txt'
     #l,w,h,cx,cy,cz,rotz
     #l,w,h in meters   cx,cy,cz in centimeters  rotz in degree   
     #points_box_7value_array = np.loadtxt(filename_bbox, delimiter=',', usecols=(2,3,4,5,6,7,8))
     #points_box_7value_array = np.loadtxt(filename_bbox, delimiter=' ', usecols=(8,9,10,11,12,13,14)).reshape(-1,7)
-    points_box_7value_array = np.loadtxt(filename_bbox, delimiter='  ', usecols=(1,2,3,4,5,6,7)).reshape(-1,7)
+    points_box_7value_array = np.loadtxt(filename_bbox, delimiter=' ', usecols=(1,2,3,4,5,6,7)).reshape(-1,7)# delimiter=' ' 几个空格
     #print(points_box_7value_array.shape)
     
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     # 3维点云
     #filename_pc = '/home/keenthan/Documents/AI_training/pointcloud/frame409.txt'
     #pc = np.loadtxt(filename_pc, delimiter=',', usecols=(0,1,2))
-    filename_pc = '/home/keenthan/Desktop/finaul_result/pcd_result/000315.pcd'
+    filename_pc = '/home/hcq/data/2022anno/finaul_result/pcd_result/000315.pcd'
     pcd_load = o3d.io.read_point_cloud(filename_pc)
     pc = np.asarray(pcd_load.points)
   
