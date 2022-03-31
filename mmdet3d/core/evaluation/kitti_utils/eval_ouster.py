@@ -53,7 +53,6 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
     num_valid_gt = 0
 
     #对num_gt中每一个物体object：
-    #对num_gt中每一个物体object：
     for i in range(num_gt):
 
         #获取这个物体的name，并小写
@@ -72,7 +71,7 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             # 如果 为有效的物体， 且该物体object不忽略，
             # 则ignored_gt上该值为0，有效的物体数num_valid_gt+1
             ignored_gt.append(0)
-            num_valid_gt += 1
+            num_valid_gt += 1 # 有效的gt数量
         else:
             ignored_gt.append(-1)
 
@@ -89,7 +88,9 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
             ignored_dt.append(-1)
     
     '''
-        print("__________num_valid_gt____________")
+    
+    
+        print("__________有效的gt数量num_valid_gt____________")
         print(num_valid_gt)
         print("__________ignored_gt____________")
         print(ignored_gt)
@@ -97,6 +98,13 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
         print(ignored_dt)
     
         该函数的输出结果是
+        __________有效的gt数量num_valid_gt____________
+4
+__________ignored_gt____________
+[0, 0, 0, 0]
+__________ignored_dt____________
+[0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+
             __________num_valid_gt____________
             76
             __________ignored_gt____________
@@ -752,9 +760,9 @@ def _prepare_data(gt_annos, dt_annos, current_class, difficulty):
     # 返回值
     return (
                 gt_datas_list,  #存放的是 每一帧物体的个数
-                dt_datas_list,  #存放的是每一帧 不同物体的得分的情况，是（N,1）
+                dt_datas_list,  #存放的是每一帧 不同物体的score得分的情况，是（N,1）
                 ignored_gts, ignored_dets,   #存在
-                total_num_valid_gt                 #存在
+                total_num_valid_gt  #有效GT总数量存在
                 )
 #         gt_datas = np.concatenate(
 #             [gt_annos[i]['bbox'],  # #! bbox index 形状是 N x 4
