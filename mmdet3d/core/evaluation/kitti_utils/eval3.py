@@ -1,10 +1,10 @@
 '''
-Description: https://blog.csdn.net/weixin_44128857/article/details/118657874    2021-07-11 18:39:47
+Description: 他人博客借鉴https://blog.csdn.net/weixin_44128857/article/details/118657874    2021-07-11 18:39:47
 Author: HCQ
 Company(School): UCAS
 Email: 1756260160@qq.com
 Date: 2021-10-17 12:14:56
-LastEditTime: 2021-10-17 19:29:19
+LastEditTime: 2022-08-05 22:26:40
 FilePath: /mmdetection3d/mmdet3d/core/evaluation/kitti_utils/eval3.py
 '''
 import io as sysio
