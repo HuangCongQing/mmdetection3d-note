@@ -1,3 +1,12 @@
+'''
+Description: kitti评测详细介绍（可适配自己的数据集评测）
+Author: HCQ
+Company(School): UCAS
+Email: 1756260160@qq.com
+Date: 2022-09-04 12:30:40
+LastEditTime: 2022-09-04 15:39:25
+FilePath: /mmdetection3d/mmdet3d/core/evaluation/kitti_utils/eval_ouster.py
+'''
 # Copyright (c) OpenMMLab. All rights reserved.
 import gc
 import io as sysio

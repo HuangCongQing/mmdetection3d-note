@@ -1,3 +1,45 @@
+
+
+## Note笔记
+
+
+Documentation: https://mmdetection3d.readthedocs.io/
+
+学习文档：https://www.yuque.com/huangzhongqing/hre6tf/nnioxg
+
+
+代码注解
+
+
+* 模型配置注释：[配置示例：votenet.py示例代码(base_/models/)](configs/_base_/models/votenet.py)
+  * [configs/_base_/models/hv_pointpillars_secfpn_ouster.py](configs/_base_/models/hv_pointpillars_secfpn_ouster.py)
+
+* 数据集配置注释：[configs/_base_/datasets/kitti-3d-3class.py](configs/_base_/datasets/kitti-3d-3class.py)
+
+
+* [kitti评测详细介绍（可适配自己的数据集评测）eval.py](mmdet3d/core/evaluation/kitti_utils/eval_ouster.py)
+
+* [...]()
+
+
+
+**其他目标检测框架(pcdet+mmdetection3d+det3d+paddle3d)代码注解笔记：**
+
+1. pcdet:https://github.com/HuangCongQing/pcdet-note
+2. mmdetection3d:https://github.com/HuangCongQing/mmdetection3d-note
+3. det3d: TODO
+4. paddle3dL TODO
+
+
+TODO：
+
+*  目标检测框架(pcdet+mmdetection3d+det3d+paddle3d)文章撰写
+
+
+
+---
+
+
 <div align="center">
   <img src="resources/mmdet3d-logo.png" width="600"/>
 </div>
@@ -14,9 +56,6 @@ In the [nuScenes 3D detection challenge](https://www.nuscenes.org/object-detecti
 
 Code and models for the best vision-only method, [FCOS3D](https://arxiv.org/abs/2104.10956), have been released. Please stay tuned for [MoCa](https://arxiv.org/abs/2012.12741).
 
-Documentation: https://mmdetection3d.readthedocs.io/
-
-学习文档：https://www.yuque.com/huangzhongqing/hre6tf/nnioxg
 
 ## Introduction
 
