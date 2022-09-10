@@ -11,13 +11,14 @@ Documentation: https://mmdetection3d.readthedocs.io/
 代码注解
 
 
-* 模型配置注释：[配置示例：votenet.py示例代码(base_/models/)](configs/_base_/models/votenet.py)
-  * [configs/_base_/models/hv_pointpillars_secfpn_ouster.py](configs/_base_/models/hv_pointpillars_secfpn_ouster.py)
+* 模型配置注释：
+  * 配置示例1：votenet.py示例代码(base_/models/):[votenet.py](configs/_base_/models/votenet.py)
+  * 配置示例2：pointpillars.py:[configs/_base_/models/hv_pointpillars_secfpn_ouster.py](configs/_base_/models/hv_pointpillars_secfpn_ouster.py)
 
 * 数据集配置注释：[configs/_base_/datasets/kitti-3d-3class.py](configs/_base_/datasets/kitti-3d-3class.py)
 
 
-* [kitti评测详细介绍（可适配自己的数据集评测）eval.py](mmdet3d/core/evaluation/kitti_utils/eval_ouster.py)
+* kitti评测详细介绍（可适配自己的数据集评测）：[eval.py](mmdet3d/core/evaluation/kitti_utils/eval_ouster.py)
 
 * [...]()
 
