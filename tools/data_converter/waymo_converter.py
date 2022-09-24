@@ -96,6 +96,7 @@ class Waymo2KITTI(object):
                                      self.workers)
         print('\nFinished ...')
 
+    # 转换一帧
     def convert_one(self, file_idx):
         """Convert action for single file.
 

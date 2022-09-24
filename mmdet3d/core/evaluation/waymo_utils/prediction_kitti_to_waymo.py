@@ -19,6 +19,7 @@ from waymo_open_dataset import label_pb2
 from waymo_open_dataset.protos import metrics_pb2
 
 
+# kitti格式转成waymo
 class KITTI2Waymo(object):
     """KITTI predictions to Waymo converter.
 
@@ -47,8 +48,8 @@ class KITTI2Waymo(object):
 
         self.kitti_result_files = kitti_result_files
         self.waymo_tfrecords_dir = waymo_tfrecords_dir
-        self.waymo_results_save_dir = waymo_results_save_dir
-        self.waymo_results_final_path = waymo_results_final_path
+        self.waymo_results_save_dir = waymo_results_save_dir # 保存所有bin的路径
+        self.waymo_results_final_path = waymo_results_final_path # 保存最终的1个bin
         self.prefix = prefix
         self.workers = int(workers)
         self.name2idx = {}
@@ -167,14 +168,15 @@ class KITTI2Waymo(object):
 
         return objects
 
+    # 单帧
     def convert_one(self, file_idx):
         """Convert action for single file.
 
         Args:
             file_idx (int): Index of the file to be converted.
         """
-        file_pathname = self.waymo_tfrecord_pathnames[file_idx]
-        file_data = tf.data.TFRecordDataset(file_pathname, compression_type='')
+        file_pathname = self.waymo_tfrecord_pathnames[file_idx] # tfrecord
+        file_data = tf.data.TFRecordDataset(file_pathname, compression_type='') # 一个tfrecord
 
         for frame_num, frame_data in enumerate(file_data):
             frame = open_dataset.Frame()
@@ -196,27 +198,31 @@ class KITTI2Waymo(object):
             if filename in self.name2idx:
                 kitti_result = \
                     self.kitti_result_files[self.name2idx[filename]]
+                # 单帧所有的objects=============================================================================
                 objects = self.parse_objects(kitti_result, T_k2w, context_name,
                                              frame_timestamp_micros)
             else:
                 print(filename, 'not found.')
                 objects = metrics_pb2.Objects()
 
+            # 保存一帧bin
             with open(
                     join(self.waymo_results_save_dir, f'{filename}.bin'),
                     'wb') as f:
                 f.write(objects.SerializeToString())
 
+    # 转换
     def convert(self):
         """Convert action."""
         print('Start converting ...')
+        # 并行化转换每一帧convert_one()
         mmcv.track_parallel_progress(self.convert_one, range(len(self)),
                                      self.workers)
         print('\nFinished ...')
 
-        # combine all files into one .bin
+        # combine all files into one .bin  所有的bin转为一个bin
         pathnames = sorted(glob(join(self.waymo_results_save_dir, '*.bin')))
-        combined = self.combine(pathnames)
+        combined = self.combine(pathnames) # 函数
 
         with open(self.waymo_results_final_path, 'wb') as f:
             f.write(combined.SerializeToString())
@@ -241,6 +247,7 @@ class KITTI2Waymo(object):
         pt_aft = np.matmul(T, pt_bef)
         return pt_aft[:3].flatten().tolist()
 
+    #
     def combine(self, pathnames):
         """Combine predictions in waymo format for each sample together.
 

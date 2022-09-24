@@ -12,10 +12,12 @@ from ..core.bbox import Box3DMode, points_cam2img
 from .kitti_dataset import KittiDataset
 
 '''  
+https://github.com/open-mmlab/mmdetection3d/blob/master/docs/zh_cn/2_new_data_model.md
 具体来说，首先使用数据转换器将 Waymo 数据集转换成 KITTI 数据集的格式，并定义 Waymo 类对转换的数据进行处理。
 因为我们将 Waymo 原始数据集进行预处理并重新组织成 KITTI 数据集的格式，因此可以比较容易通过继承 KittiDataset 类来实现 WaymoDataset 类。
 需要注意的是，由于 Waymo 数据集有相应的官方评估方法，我们需要在定义新数据类的过程中引入官方评估方法，此时用户可以顺利的转换 Waymo 数据的格式，并使用 WaymoDataset 数据类进行模型的训练和评估。
 '''
+#  Waymo 数据集转换成 KITTI（继承KittiDataset）
 @DATASETS.register_module()
 class WaymoDataset(KittiDataset):
     """Waymo Dataset.
@@ -135,6 +137,7 @@ class WaymoDataset(KittiDataset):
 
         return input_dict
 
+    # 
     def format_results(self,
                        outputs,
                        pklfile_prefix=None,
@@ -187,9 +190,10 @@ class WaymoDataset(KittiDataset):
             result_files = self.bbox2result_kitti(outputs, self.CLASSES,
                                                   pklfile_prefix,
                                                   submission_prefix)
+        # kitti转waymo============================================
         if 'waymo' in data_format:
             from ..core.evaluation.waymo_utils.prediction_kitti_to_waymo import \
-                KITTI2Waymo  # noqa
+                KITTI2Waymo  # noqa   mmdet3d/core/evaluation/waymo_utils/prediction_kitti_to_waymo.py========================================
             waymo_root = osp.join(
                 self.data_root.split('kitti_format')[0], 'waymo_format')
             if self.split == 'training':
@@ -200,23 +204,26 @@ class WaymoDataset(KittiDataset):
                 prefix = '2'
             else:
                 raise ValueError('Not supported split value.')
-            save_tmp_dir = tempfile.TemporaryDirectory()
+            save_tmp_dir = tempfile.TemporaryDirectory() #缓存文件夹~~
             waymo_results_save_dir = save_tmp_dir.name
-            waymo_results_final_path = f'{pklfile_prefix}.bin'
+            waymo_results_final_path = f'{pklfile_prefix}.bin' # 最终结果的pred.bin
+            # 实例化KITTI2Waymo
             if 'pts_bbox' in result_files:
-                converter = KITTI2Waymo(result_files['pts_bbox'],
+                converter = KITTI2Waymo(result_files['pts_bbox'], # mmdet3d/core/evaluation/waymo_utils/prediction_kitti_to_waymo.py========================================
                                         waymo_tfrecords_dir,
-                                        waymo_results_save_dir,
+                                        waymo_results_save_dir, # 保存bin路径
                                         waymo_results_final_path, prefix)
             else:
                 converter = KITTI2Waymo(result_files, waymo_tfrecords_dir,
                                         waymo_results_save_dir,
                                         waymo_results_final_path, prefix)
-            converter.convert()
-            save_tmp_dir.cleanup()
+            converter.convert() # 转换 里面包含convert_one======================================================================================================================
+            save_tmp_dir.cleanup() # 清除缓存文件夹~~
 
         return result_files, tmp_dir
 
+    # 评测===============================main
+    # 继承KittiDataset）的评测：mmdet3d/datasets/kitti_dataset.py
     def evaluate(self,
                  results,
                  metric='waymo',
@@ -252,7 +259,7 @@ class WaymoDataset(KittiDataset):
         assert ('waymo' in metric or 'kitti' in metric), \
             f'invalid metric {metric}'
         if 'kitti' in metric:
-            result_files, tmp_dir = self.format_results(
+            result_files, tmp_dir = self.format_results( # 本文件上面
                 results,
                 pklfile_prefix,
                 submission_prefix,
@@ -283,6 +290,7 @@ class WaymoDataset(KittiDataset):
                     self.CLASSES,
                     eval_types=['bev', '3d'])
                 print_log('\n' + ap_result_str, logger=logger)
+        # waymo处理
         if 'waymo' in metric:
             waymo_root = osp.join(
                 self.data_root.split('kitti_format')[0], 'waymo_format')
@@ -291,11 +299,13 @@ class WaymoDataset(KittiDataset):
                 pklfile_prefix = osp.join(eval_tmp_dir.name, 'results')
             else:
                 eval_tmp_dir = None
+            # 格式化结果=============================================================
             result_files, tmp_dir = self.format_results(
                 results,
                 pklfile_prefix,
                 submission_prefix,
                 data_format='waymo')
+            # 运行评测二进制文件
             import subprocess
             ret_bytes = subprocess.check_output(
                 'mmdet3d/core/evaluation/waymo_utils/' +
