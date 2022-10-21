@@ -32,9 +32,7 @@ Documentation: https://mmdetection3d.readthedocs.io/
 4. paddle3dL TODO
 
 
-TODO：
-
-*  目标检测框架(pcdet+mmdetection3d+det3d+paddle3d)文章撰写
+* 【202209】 [目标检测框架(pcdet+mmdetection3d+det3d+paddle3d)文章撰写](https://zhuanlan.zhihu.com/p/569189196)
 
 
 
