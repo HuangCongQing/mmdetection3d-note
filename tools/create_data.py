@@ -23,8 +23,8 @@ def kitti_data_prep(root_path, info_prefix, version, out_dir):
         version (str): Dataset version.
         out_dir (str): Output directory of the groundtruth database info.  gtbase参数  ./data/kitti
     """
-    # kitti.create_kitti_info_file(root_path, info_prefix) # 第一步 生成 4个pkl文件
-    # kitti.create_reduced_point_cloud(root_path, info_prefix) # 生成压缩后的bin文件
+    kitti.create_kitti_info_file(root_path, info_prefix) # 第一步 生成 4个pkl文件
+    kitti.create_reduced_point_cloud(root_path, info_prefix) # 生成压缩后的bin文件
     # # 4个pkl文件路径作为下面 coco.json输入
     # info_train_path = osp.join(root_path, f'{info_prefix}_infos_train.pkl')
     # info_val_path = osp.join(root_path, f'{info_prefix}_infos_val.pkl')
