@@ -1,7 +1,9 @@
 
 
 ## Note笔记
-
+**Based on version [mmdetection3d-0.17.1](https://github.com/open-mmlab/mmdetection3d/tree/v0.17.1)(环境配置好之后可运行).**
+* **【202212】[mmdet3d-0.17版本环境配置(CUDA 11.x + torch1.10.1）](https://www.yuque.com/huangzhongqing/hre6tf/cqhuv1y0hhuibi2u?singleDoc# )**
+* TODO:version [mmdetection3d-1.1](https://github.com/open-mmlab/mmdetection3d/tree/1.1).
 
 Documentation: https://mmdetection3d.readthedocs.io/
 
@@ -9,7 +11,6 @@ Documentation: https://mmdetection3d.readthedocs.io/
 
 
 代码注解
-
 
 * 模型配置注释：
   * 配置示例1：votenet.py示例代码(base_/models/):[votenet.py](configs/_base_/models/votenet.py)
