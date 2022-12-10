@@ -5,6 +5,7 @@ from concurrent import futures as futures
 from os import path as osp
 from pathlib import Path
 from skimage import io
+import os
 
 
 def get_image_index_str(img_idx, use_prefix_id=False):
@@ -44,7 +45,12 @@ def get_image_path(idx,
                    exist_check=True,
                    info_type='image_2',
                    use_prefix_id=False):
-    return get_kitti_info_path(idx, prefix, info_type, '.png', training,
+    # return get_kitti_info_path(idx, prefix, info_type, '.png', training,
+    #                            relative_path, exist_check, use_prefix_id)
+
+    # 兼容jpg，png等多种图片类型 jpg , png or others
+    image_type = "." + os.listdir(os.path.join(prefix, "training", info_type))[0].split('.')[-1] #
+    return get_kitti_info_path(idx, prefix, info_type, image_type, training,
                                relative_path, exist_check, use_prefix_id)
 
 #  label_2
