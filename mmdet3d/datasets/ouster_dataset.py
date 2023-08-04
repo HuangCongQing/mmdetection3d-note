@@ -174,7 +174,7 @@ class OusterDataset(Custom3DDataset):
         # 组合成(x_lidar, y_lidar, z_lidar, dx, dy, dz, yaw)
         gt_bboxes_3d = np.concatenate([loc, dims, rots[..., np.newaxis]],
                                       axis=1).astype(np.float32)
-        # 修改
+        # 修改 https://www.yuque.com/huangzhongqing/hre6tf/ha7d5f#mqcp4
         # 雷达坐标系：https://mmdetection3d.readthedocs.io/zh_CN/latest/api.html#mmdet3d.core.bbox.LiDARInstance3DBoxes
         # LiDARInstance3DBoxes(tensor, box_dim=7, with_yaw=True, origin=(0.5, 0.5, 0)) 目标框的0.5的长 0.5倍的宽和0倍的高
         gt_bboxes_3d = LiDARInstance3DBoxes(gt_bboxes_3d, origin=(0.5, 0.5, 0.5))# .convert_to(self.box_mode_3d) # box_mode_3d= Box3DMode.LIDAR====================================================================
